@@ -54,11 +54,13 @@ public class ChessPiece {
      */
     public Collection<ChessMove> pieceMoves(ChessBoard board, ChessPosition myPosition) {
         // Use the PieceMovesCalculator interface to get the piece moves
-        if (type == PieceType.BISHOP) {
-            return new BishopMovesCalculator(myPosition, board, pieceColor).pieceMoves();
-        }
-        if (type == PieceType.KING) {
-            return new KingMovesCalculator(myPosition, board, pieceColor).pieceMoves();
+        switch (type) {
+            case KING -> {
+                return new KingMovesCalculator(myPosition, board, pieceColor).pieceMoves();
+            }
+            case BISHOP -> {
+                return new BishopMovesCalculator(myPosition, board, pieceColor).pieceMoves();
+            }
         }
         return null;
     }
