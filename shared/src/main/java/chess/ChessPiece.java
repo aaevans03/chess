@@ -64,6 +64,9 @@ public class ChessPiece {
             case BISHOP -> {
                 return new BishopMovesCalculator(myPosition, board, pieceColor).pieceMoves();
             }
+            case ROOK -> {
+                return new RookMovesCalculator(myPosition, board, pieceColor).pieceMoves();
+            }
         }
         return null;
     }
