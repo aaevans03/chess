@@ -54,9 +54,13 @@ public class ChessPiece {
      */
     public Collection<ChessMove> pieceMoves(ChessBoard board, ChessPosition myPosition) {
         // Use the PieceMovesCalculator interface to get the piece moves
-
-        var chessMoves = new BishopMovesCalculator(myPosition, board, pieceColor).pieceMoves();
-        return chessMoves;
+        if (type == PieceType.BISHOP) {
+            return new BishopMovesCalculator(myPosition, board, pieceColor).pieceMoves();
+        }
+        if (type == PieceType.KING) {
+            return new KingMovesCalculator(myPosition, board, pieceColor).pieceMoves();
+        }
+        return null;
     }
 
     @Override
