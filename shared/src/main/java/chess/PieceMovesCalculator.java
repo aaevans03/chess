@@ -10,7 +10,7 @@ public interface PieceMovesCalculator {
 }
 
 class KingMovesCalculator implements PieceMovesCalculator {
-    private Collection<ChessMove> pieceMoves;
+    private final Collection<ChessMove> pieceMoves;
     private final ChessPosition myPosition;
     private final ChessBoard board;
     private final ChessGame.TeamColor pieceColor;
@@ -33,13 +33,20 @@ class KingMovesCalculator implements PieceMovesCalculator {
                 var newRow = originalRow + i;
                 var newCol = originalCol + j;
                 var newPosition = new ChessPosition(newRow, newCol);
+                boolean ownColor = false;
 
                 // if new coordinates are within the bounds and the new position does not equal the old one
                 if (0 < newRow && newRow <= 8 && 0 < newCol && newCol <= 8 && !newPosition.equals(myPosition)) {
-                    pieceMoves.add(new ChessMove(myPosition, new ChessPosition(newRow, newCol), null));
+                    // check to see if the piece in the new position is the same color as the king
+                    if (board.getPiece(newPosition) != null) {
+                        ownColor = (board.getPiece(newPosition).getTeamColor() == pieceColor);
+                    }
+                    // if the piece there is not of its own color, you can move into the space
+                    if (!ownColor) {
+                        pieceMoves.add(new ChessMove(myPosition, new ChessPosition(newRow, newCol), null));
+                    }
                 }
             }
-
         }
         return pieceMoves;
     }
