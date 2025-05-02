@@ -1,15 +1,20 @@
-package chess;
+package chess.movesCalculator;
+
+import chess.ChessBoard;
+import chess.ChessGame;
+import chess.ChessMove;
+import chess.ChessPosition;
 
 import java.util.ArrayList;
 import java.util.Collection;
 
-class KingMovesCalculator implements PieceMovesCalculator {
+public class KingMovesCalculator implements PieceMovesCalculator {
     private final Collection<ChessMove> pieceMoves;
     private final ChessPosition myPosition;
     private final ChessBoard board;
     private final ChessGame.TeamColor pieceColor;
 
-    KingMovesCalculator(ChessPosition myPosition, ChessBoard board, ChessGame.TeamColor pieceColor) {
+    public KingMovesCalculator(ChessPosition myPosition, ChessBoard board, ChessGame.TeamColor pieceColor) {
         pieceMoves = new ArrayList<>();
         this.myPosition = myPosition;
         this.board = board;

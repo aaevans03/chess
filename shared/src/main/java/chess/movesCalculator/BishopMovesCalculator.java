@@ -1,16 +1,20 @@
-package chess;
+package chess.movesCalculator;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import chess.ChessBoard;
+import chess.ChessGame;
+import chess.ChessMove;
+import chess.ChessPosition;
 
-class BishopMovesCalculator implements PieceMovesCalculator {
+public class BishopMovesCalculator implements PieceMovesCalculator {
 
     private final Collection<ChessMove> pieceMoves;
     private final ChessPosition myPosition;
     private final ChessBoard board;
     private final ChessGame.TeamColor pieceColor;
 
-    BishopMovesCalculator(ChessPosition myPosition, ChessBoard board, ChessGame.TeamColor pieceColor) {
+    public BishopMovesCalculator(ChessPosition myPosition, ChessBoard board, ChessGame.TeamColor pieceColor) {
         pieceMoves = new ArrayList<>();
         this.myPosition = myPosition;
         this.board = board;

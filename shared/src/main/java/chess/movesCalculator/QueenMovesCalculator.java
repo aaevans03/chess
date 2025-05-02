@@ -1,16 +1,21 @@
-package chess;
+package chess.movesCalculator;
+
+import chess.ChessBoard;
+import chess.ChessGame;
+import chess.ChessMove;
+import chess.ChessPosition;
 
 import java.util.ArrayList;
 import java.util.Collection;
 
-class RookMovesCalculator implements PieceMovesCalculator {
+public class QueenMovesCalculator implements PieceMovesCalculator {
 
     private final Collection<ChessMove> pieceMoves;
     private final ChessPosition myPosition;
     private final ChessBoard board;
     private final ChessGame.TeamColor pieceColor;
 
-    RookMovesCalculator(ChessPosition myPosition, ChessBoard board, ChessGame.TeamColor pieceColor) {
+    public QueenMovesCalculator(ChessPosition myPosition, ChessBoard board, ChessGame.TeamColor pieceColor) {
         pieceMoves = new ArrayList<>();
         this.myPosition = myPosition;
         this.board = board;
@@ -23,24 +28,12 @@ class RookMovesCalculator implements PieceMovesCalculator {
         var originalRow = myPosition.getRow();
         var originalCol = myPosition.getColumn();
 
-        // 4 for loops: one in each direction
-        calculateOneDirection(originalRow, originalCol, 1, 0);
-        calculateOneDirection(originalRow, originalCol, -1, 0);
-        calculateOneDirection(originalRow, originalCol, 0, 1);
-        calculateOneDirection(originalRow, originalCol, 0, -1);
-
-/*      OLD CODE
-        // Loop 1: up and right
-        for (int i = 1; i < 8; i++) {
-            newRow++;
-            newCol++;
-
-            if (newRow <= 8 && newCol <= 8) {
-                pieceMoves.add(new ChessMove(myPosition, new ChessPosition(newRow,newCol),null));
-                System.out.println("New chess move added");
+        // 8 for loops: one in each direction
+        for (int i = -1; i <= 1; i++) {
+            for (int j = -1; j <= 1; j++) {
+                calculateOneDirection(originalRow, originalCol, i, j);
             }
         }
-*/
         return pieceMoves;
     }
 
