@@ -55,7 +55,7 @@ public class ChessPiece {
     public Collection<ChessMove> pieceMoves(ChessBoard board, ChessPosition myPosition) {
         // Use the PieceMovesCalculator interface to get the piece moves
 
-        var chessMoves = new BishopMovesCalculator(myPosition).pieceMoves(board,myPosition);
+        var chessMoves = new BishopMovesCalculator(myPosition, board, pieceColor).pieceMoves();
         return chessMoves;
     }
 
