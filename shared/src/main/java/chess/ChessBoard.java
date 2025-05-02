@@ -12,7 +12,7 @@ import java.util.Objects;
 public class ChessBoard {
 
     // My chess board is stored as a 8x8 array of chess pieces. At first, it is filled with null spaces.
-    private ChessPiece[][] board = new ChessPiece[8][8];
+    private final ChessPiece[][] board = new ChessPiece[8][8];
 
     public ChessBoard() {
         
