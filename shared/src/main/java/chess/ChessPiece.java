@@ -48,6 +48,8 @@ public class ChessPiece {
      */
     public Collection<ChessMove> pieceMoves(ChessBoard board, ChessPosition myPosition) {
         // Use the PieceMovesCalculator interface to get the piece moves
-        throw new RuntimeException("Not implemented");
+
+        var chessMoves = new BishopMovesCalculator().pieceMoves(board,myPosition);
+        return chessMoves;
     }
 }

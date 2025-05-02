@@ -8,6 +8,14 @@ package chess;
  */
 public class ChessPosition {
 
+    @Override
+    public String toString() {
+        return "ChessPosition{" +
+                "row=" + row +
+                ", col=" + col +
+                '}';
+    }
+
     // Positions are stored as data members here
     private final int row;
     private final int col;
