@@ -11,6 +11,14 @@ public interface PieceMovesCalculator {
 
 class BishopMovesCalculator implements PieceMovesCalculator {
 
+    private Collection<ChessMove> pieceMoves;
+    private final ChessPosition myPosition;
+
+    BishopMovesCalculator(ChessPosition myPosition) {
+        pieceMoves = new ArrayList<ChessMove>();
+        this.myPosition = myPosition;
+    }
+
     // calculate the moves of a bishop
     public Collection<ChessMove> pieceMoves(ChessBoard board, ChessPosition myPosition) {
         // algorithm: calculate all moves diagonal to the bishop, and returns it in a ChessMove Collection
@@ -20,12 +28,14 @@ class BishopMovesCalculator implements PieceMovesCalculator {
         var newRow = originalRow;
         var newCol = originalCol;
 
-        // create a Collection to store new list of piece moves
-        Collection<ChessMove> pieceMoves = new ArrayList<ChessMove>();
-
         // 4 for loops: one in each direction
-        System.out.println("Loop time");
 
+        calculateOneDirection(originalRow, originalCol, 1, 1);
+        calculateOneDirection(originalRow, originalCol, -1, 1);
+        calculateOneDirection(originalRow, originalCol, -1, -1);
+        calculateOneDirection(originalRow, originalCol, 1, -1);
+
+/*      OLD CODE
         // Loop 1: up and right
         for (int i = 1; i < 8; i++) {
             newRow++;
@@ -36,7 +46,22 @@ class BishopMovesCalculator implements PieceMovesCalculator {
                 System.out.println("New chess move added");
             }
         }
+*/
 
         return pieceMoves;
+    }
+
+    private void calculateOneDirection(int originalRow, int originalCol, int rowDirection, int colDirection) {
+        var newRow = originalRow;
+        var newCol = originalCol;
+
+        for (int i = 1; i < 8; i++) {
+            newRow += rowDirection;
+            newCol += colDirection;
+
+            if (0 < newRow && newRow <= 8 && 0 < newCol && newCol <= 8) {
+                pieceMoves.add(new ChessMove(myPosition, new ChessPosition(newRow, newCol), null));
+            }
+        }
     }
 }
