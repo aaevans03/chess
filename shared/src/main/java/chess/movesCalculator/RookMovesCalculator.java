@@ -22,9 +22,9 @@ public class RookMovesCalculator implements PieceMovesCalculator {
         this.pieceColor = pieceColor;
     }
 
-    // calculate the moves of a bishop
+    // calculate the moves of a rook
     public Collection<ChessMove> pieceMoves() {
-        // algorithm: calculate all moves diagonal to the bishop, and returns it in a ChessMove Collection
+        // algorithm: calculate all moves diagonal to the rook, and returns it in a ChessMove Collection
         var originalRow = myPosition.getRow();
         var originalCol = myPosition.getColumn();
 
