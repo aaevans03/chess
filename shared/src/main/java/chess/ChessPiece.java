@@ -71,6 +71,9 @@ public class ChessPiece {
             case KNIGHT -> {
                 return new KnightMovesCalculator(myPosition, board, pieceColor).pieceMoves();
             }
+            case PAWN -> {
+                return new PawnMovesCalculator(myPosition,board,pieceColor).pieceMoves();
+            }
         }
         return null;
     }
