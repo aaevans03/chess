@@ -44,6 +44,7 @@ public class ChessBoard {
      * (How the game of chess normally starts)
      */
     public void resetBoard() {
+        // add white pieces
         var white = ChessGame.TeamColor.WHITE;
         addPiece(new ChessPosition(1,1), new ChessPiece(white, ChessPiece.PieceType.ROOK));
         addPiece(new ChessPosition(1,2), new ChessPiece(white, ChessPiece.PieceType.KNIGHT));
@@ -57,6 +58,7 @@ public class ChessBoard {
             addPiece(new ChessPosition(2, i), new ChessPiece(white, ChessPiece.PieceType.PAWN));
         }
 
+        // add black pieces
         var black = ChessGame.TeamColor.BLACK;
         for (int i = 1; i <=8; i++) {
             addPiece(new ChessPosition(7, i), new ChessPiece(black, ChessPiece.PieceType.PAWN));
