@@ -1,51 +1,38 @@
-package chess.movesCalculator;
+package chess.movescalculator;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import chess.ChessBoard;
 import chess.ChessGame;
 import chess.ChessMove;
 import chess.ChessPosition;
 
-import java.util.ArrayList;
-import java.util.Collection;
-
-public class RookMovesCalculator implements PieceMovesCalculator {
+public class BishopMovesCalculator implements PieceMovesCalculator {
 
     private final Collection<ChessMove> pieceMoves;
     private final ChessPosition myPosition;
     private final ChessBoard board;
     private final ChessGame.TeamColor pieceColor;
 
-    public RookMovesCalculator(ChessPosition myPosition, ChessBoard board, ChessGame.TeamColor pieceColor) {
+    public BishopMovesCalculator(ChessPosition myPosition, ChessBoard board, ChessGame.TeamColor pieceColor) {
         pieceMoves = new ArrayList<>();
         this.myPosition = myPosition;
         this.board = board;
         this.pieceColor = pieceColor;
     }
 
-    // calculate the moves of a rook
+    // calculate the moves of a bishop
     public Collection<ChessMove> pieceMoves() {
-        // algorithm: calculate all moves diagonal to the rook, and returns it in a ChessMove Collection
+        // algorithm: calculate all moves diagonal to the bishop, and returns it in a ChessMove Collection
         var originalRow = myPosition.getRow();
         var originalCol = myPosition.getColumn();
 
         // 4 for loops: one in each direction
-        calculateOneDirection(originalRow, originalCol, 1, 0);
-        calculateOneDirection(originalRow, originalCol, -1, 0);
-        calculateOneDirection(originalRow, originalCol, 0, 1);
-        calculateOneDirection(originalRow, originalCol, 0, -1);
+        calculateOneDirection(originalRow, originalCol, 1, 1);
+        calculateOneDirection(originalRow, originalCol, -1, 1);
+        calculateOneDirection(originalRow, originalCol, -1, -1);
+        calculateOneDirection(originalRow, originalCol, 1, -1);
 
-/*      OLD CODE
-        // Loop 1: up and right
-        for (int i = 1; i < 8; i++) {
-            newRow++;
-            newCol++;
-
-            if (newRow <= 8 && newCol <= 8) {
-                pieceMoves.add(new ChessMove(myPosition, new ChessPosition(newRow,newCol),null));
-                System.out.println("New chess move added");
-            }
-        }
-*/
         return pieceMoves;
     }
 

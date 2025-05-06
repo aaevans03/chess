@@ -1,4 +1,4 @@
-package chess.movesCalculator;
+package chess.movescalculator;
 
 import chess.ChessMove;
 import java.util.Collection;

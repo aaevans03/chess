@@ -1,4 +1,4 @@
-package chess.movesCalculator;
+package chess.movescalculator;
 
 import chess.ChessBoard;
 import chess.ChessGame;
@@ -8,32 +8,32 @@ import chess.ChessPosition;
 import java.util.ArrayList;
 import java.util.Collection;
 
-public class QueenMovesCalculator implements PieceMovesCalculator {
+public class RookMovesCalculator implements PieceMovesCalculator {
 
     private final Collection<ChessMove> pieceMoves;
     private final ChessPosition myPosition;
     private final ChessBoard board;
     private final ChessGame.TeamColor pieceColor;
 
-    public QueenMovesCalculator(ChessPosition myPosition, ChessBoard board, ChessGame.TeamColor pieceColor) {
+    public RookMovesCalculator(ChessPosition myPosition, ChessBoard board, ChessGame.TeamColor pieceColor) {
         pieceMoves = new ArrayList<>();
         this.myPosition = myPosition;
         this.board = board;
         this.pieceColor = pieceColor;
     }
 
-    // calculate the moves of a queen
+    // calculate the moves of a rook
     public Collection<ChessMove> pieceMoves() {
-        // algorithm: calculate all moves diagonal to the queen, and returns it in a ChessMove Collection
+        // algorithm: calculate all moves diagonal to the rook, and returns it in a ChessMove Collection
         var originalRow = myPosition.getRow();
         var originalCol = myPosition.getColumn();
 
-        // 8 for loops: one in each direction
-        for (int i = -1; i <= 1; i++) {
-            for (int j = -1; j <= 1; j++) {
-                calculateOneDirection(originalRow, originalCol, i, j);
-            }
-        }
+        // 4 for loops: one in each direction
+        calculateOneDirection(originalRow, originalCol, 1, 0);
+        calculateOneDirection(originalRow, originalCol, -1, 0);
+        calculateOneDirection(originalRow, originalCol, 0, 1);
+        calculateOneDirection(originalRow, originalCol, 0, -1);
+
         return pieceMoves;
     }
 
