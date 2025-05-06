@@ -1,10 +1,11 @@
 package chess.movescalculator;
 
-import java.util.Collection;
 import chess.ChessBoard;
 import chess.ChessGame;
 import chess.ChessMove;
 import chess.ChessPosition;
+
+import java.util.Collection;
 
 public class BishopMovesCalculator extends StraightMovesCalculator implements PieceMovesCalculator {
 
