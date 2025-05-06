@@ -99,18 +99,18 @@ public class PawnMovesCalculator implements PieceMovesCalculator {
     private boolean checkForPromotion(int newRow, int newCol, int rowDirection) {
         // WHITE and at top of board
         if (rowDirection == 1 && newRow == 8) {
-            PromotePawn(newRow, newCol);
+            promotePawn(newRow, newCol);
             return true;
         }
         // BLACK and add bottom of board
         else if (rowDirection == -1 && newRow == 1) {
-            PromotePawn(newRow, newCol);
+            promotePawn(newRow, newCol);
             return true;
         }
         return false;
     }
 
-    private void PromotePawn(int newRow, int newCol) {
+    private void promotePawn(int newRow, int newCol) {
         pieceMoves.add(new ChessMove(myPosition, new ChessPosition(newRow, newCol), ChessPiece.PieceType.QUEEN));
         pieceMoves.add(new ChessMove(myPosition, new ChessPosition(newRow, newCol), ChessPiece.PieceType.BISHOP));
         pieceMoves.add(new ChessMove(myPosition, new ChessPosition(newRow, newCol), ChessPiece.PieceType.ROOK));
