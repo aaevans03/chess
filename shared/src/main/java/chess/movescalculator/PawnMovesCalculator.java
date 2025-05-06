@@ -63,21 +63,7 @@ public class PawnMovesCalculator implements PieceMovesCalculator {
 
                 // for moving straight ahead only
                 if (i == 0) {
-                    // if the piece is not blocked, you can move into the space
-                    if (board.getPiece(newPosition) == null) {
-
-                        // If there is no promotion, add a regular forward movement with no promotion piece
-                        if (!checkForPromotion(newRow, newCol, rowDirection)) {
-                            pieceMoves.add(new ChessMove(myPosition, new ChessPosition(newRow, newCol), null));
-
-                            // If the pawn is in the starting spot, add another possible move
-                            if (inStartingSpot) {
-                                if (board.getPiece(new ChessPosition(newRow + rowDirection, newCol)) == null) {
-                                    pieceMoves.add(new ChessMove(myPosition, new ChessPosition(newRow + rowDirection, newCol), null));
-                                }
-                            }
-                        }
-                    }
+                    moveAhead(rowDirection, newPosition, newRow, newCol, inStartingSpot);
                 }
 
                 // Diagonal moves for capturing other pieces
@@ -85,6 +71,24 @@ public class PawnMovesCalculator implements PieceMovesCalculator {
                     // Check for a promotion, if there's no promotion then add a regular movement with no promotion piece
                     if (!checkForPromotion(newRow, newCol, rowDirection)) {
                         pieceMoves.add(new ChessMove(myPosition, new ChessPosition(newRow, newCol), null));
+                    }
+                }
+            }
+        }
+    }
+
+    private void moveAhead(int rowDirection, ChessPosition newPosition, int newRow, int newCol, boolean inStartingSpot) {
+        // if the piece is not blocked, you can move into the space
+        if (board.getPiece(newPosition) == null) {
+
+            // If there is no promotion, add a regular forward movement with no promotion piece
+            if (!checkForPromotion(newRow, newCol, rowDirection)) {
+                pieceMoves.add(new ChessMove(myPosition, new ChessPosition(newRow, newCol), null));
+
+                // If the pawn is in the starting spot, add another possible move
+                if (inStartingSpot) {
+                    if (board.getPiece(new ChessPosition(newRow + rowDirection, newCol)) == null) {
+                        pieceMoves.add(new ChessMove(myPosition, new ChessPosition(newRow + rowDirection, newCol), null));
                     }
                 }
             }
