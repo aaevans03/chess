@@ -111,9 +111,5 @@ public class PawnMovesCalculator extends MovesCalculator {
         newMoves.add(new ChessMove(initialPos, newPos, ChessPiece.PieceType.BISHOP));
         newMoves.add(new ChessMove(initialPos, newPos, ChessPiece.PieceType.QUEEN));
     }
-
-    public boolean checkIfEmpty(ChessPosition newPos) {
-        return board.getPiece(newPos) == null;
-    }
 }
 

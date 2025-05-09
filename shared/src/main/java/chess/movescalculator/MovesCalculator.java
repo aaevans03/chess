@@ -61,7 +61,7 @@ public abstract class MovesCalculator {
                 ChessPosition newPos = new ChessPosition(row, col);
 
                 // set piece as blocked in order to stop further movement
-                if (board.getPiece(newPos) != null) {
+                if (!checkIfEmpty(newPos)) {
                     blocked = true;
 
                     // if the piece blocking is the same color, you can't move onto it
@@ -87,7 +87,7 @@ public abstract class MovesCalculator {
             ChessPosition newPos = new ChessPosition(row, col);
 
             // if the piece blocking is the same color, you can't move onto it
-            if (board.getPiece(newPos) != null && board.getPiece(newPos).getTeamColor() == piece.getTeamColor()) {
+            if (!checkIfEmpty(newPos) && board.getPiece(newPos).getTeamColor() == piece.getTeamColor()) {
                 return;
             }
             // add a piece
@@ -98,5 +98,9 @@ public abstract class MovesCalculator {
     // Check to see if the given row and column are in bounds in the chess board
     public boolean positionInBounds(int row, int col) {
         return row >= 1 && row <= 8 && col >= 1 && col <= 8;
+    }
+
+    public boolean checkIfEmpty(ChessPosition newPos) {
+        return board.getPiece(newPos) == null;
     }
 }
