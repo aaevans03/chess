@@ -1,5 +1,6 @@
 package chess;
 
+import java.util.ArrayList;
 import java.util.Collection;
 
 /**
@@ -12,10 +13,14 @@ public class ChessGame {
 
     private ChessBoard gameBoard;
     private TeamColor currentTeamTurn;
+    private ChessPosition whiteKingPos;
+    private ChessPosition blackKingPos;
 
     public ChessGame() {
         gameBoard = new ChessBoard();
         gameBoard.resetBoard();
+        whiteKingPos = new ChessPosition(1,5);
+        blackKingPos = new ChessPosition(8,5);
         setTeamTurn(TeamColor.WHITE);
     }
 
@@ -51,7 +56,28 @@ public class ChessGame {
      * startPosition
      */
     public Collection<ChessMove> validMoves(ChessPosition startPosition) {
-        throw new RuntimeException("Not implemented");
+        // First, get the complete list of moves
+        ChessPiece currentPiece = gameBoard.getPiece(startPosition);
+        if (currentPiece == null) {
+            return null;
+        }
+        var allMoves = currentPiece.pieceMoves(gameBoard, startPosition);
+
+        // Process:
+        // 1. For every one of these possible moves, create a copy of the chess board with that move made.
+            // a. Loop through all pieces on that board to see if they can capture the king.
+                // i. If any piece can capture the king, it's automatically an invalid move. Return to step 1.
+                // ii. If a move is ok, add it to a Collection that stores valid moves.
+            // b. Finish looping through the moves.
+        // 2. Return the valid moves.
+
+        Collection<ChessMove> validMoves = new ArrayList<>();
+
+        for (ChessMove move : allMoves) {
+            // clone the board
+            ChessBoard newBoard = gameBoard.cloneBoard();
+        }
+        return allMoves;
     }
 
     /**
@@ -67,6 +93,16 @@ public class ChessGame {
 
         gameBoard.addPiece(startPos, null);
         gameBoard.addPiece(endPos, targetPiece);
+
+        // If the piece moved is a king, update its position in this class
+        if (targetPiece.getPieceType() == ChessPiece.PieceType.KING) {
+            if (currentTeamTurn == TeamColor.BLACK) {
+                blackKingPos = endPos;
+            }
+            else {
+                whiteKingPos = endPos;
+            }
+        }
 
         // Team color changed after move is made
         setTeamTurn(currentTeamTurn == TeamColor.BLACK ? TeamColor.WHITE : TeamColor.BLACK);

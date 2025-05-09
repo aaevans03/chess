@@ -73,6 +73,22 @@ public class ChessBoard {
         addPiece(new ChessPosition(8,8), new ChessPiece(black, ChessPiece.PieceType.ROOK));
     }
 
+    public ChessBoard cloneBoard() {
+        ChessBoard clone = new ChessBoard();
+
+        for (int i = 1; i <= 8; i++) {
+            for (int j = 1; j <= 8; j++) {
+                ChessPosition curPos = new ChessPosition(i, j);
+                ChessPiece curPiece = board[i-1][j-1];
+
+                if (curPiece != null) {
+                    clone.addPiece(curPos, new ChessPiece(curPiece));
+                }
+            }
+        }
+        return clone;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (o == null || getClass() != o.getClass()) {

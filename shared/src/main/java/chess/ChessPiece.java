@@ -21,6 +21,15 @@ public class ChessPiece {
     }
 
     /**
+     * Copy constructor for ChessPiece
+     * @param oldPiece is the piece to create a copy of.
+     */
+    public ChessPiece(ChessPiece oldPiece) {
+        this.pieceColor = oldPiece.getTeamColor();
+        this.type = oldPiece.getPieceType();
+    }
+
+    /**
      * The various different chess piece options
      */
     public enum PieceType {
