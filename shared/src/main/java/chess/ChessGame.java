@@ -63,6 +63,9 @@ public class ChessGame {
         }
         var allMoves = currentPiece.pieceMoves(gameBoard, startPosition);
 
+        // Get the piece color
+        TeamColor curColor = currentPiece.getTeamColor();
+
         /*
         Process:
         1. For every one of these possible moves, create a copy of the chess board with that move made.
@@ -79,10 +82,6 @@ public class ChessGame {
             // clone the board
             ChessBoard newBoard = gameBoard.cloneBoard();
 
-            // Get the 2 kings' positions
-            var newWhiteKingPos = newBoard.locateKing(TeamColor.WHITE);
-            var newBlackKingPos = newBoard.locateKing(TeamColor.BLACK);
-
             // make the move
             ChessPosition startPos = move.getStartPosition();
             ChessPosition endPos = move.getEndPosition();
@@ -91,12 +90,9 @@ public class ChessGame {
             newBoard.addPiece(startPos, null);
             newBoard.addPiece(endPos, targetPiece);
 
-            if (targetPiece.getPieceType() == ChessPiece.PieceType.KING && currentTeamTurn == TeamColor.WHITE) {
-                newWhiteKingPos = endPos;
-            }
-            if (targetPiece.getPieceType() == ChessPiece.PieceType.KING && currentTeamTurn == TeamColor.BLACK) {
-                newBlackKingPos = endPos;
-            }
+            // Get the 2 kings' positions
+            var newWhiteKingPos = newBoard.locateKing(TeamColor.WHITE);
+            var newBlackKingPos = newBoard.locateKing(TeamColor.BLACK);
 
             boolean badMove = false;
 
@@ -115,7 +111,7 @@ public class ChessGame {
                         for (ChessMove newMove : newPieceMoves) {
                             ChessPosition newEndPos = newMove.getEndPosition();
 
-                            switch (currentTeamTurn) {
+                            switch (curColor) {
                                 case WHITE -> {
                                     if (newEndPos.equals(newWhiteKingPos)) {
                                         badMove = true;
