@@ -167,6 +167,12 @@ public class ChessGame {
             }
         }
 
+        // Pawn promotion
+        if (move.getPromotionPiece() != null) {
+            var promotionPiece = new ChessPiece(targetPiece.getTeamColor(), move.getPromotionPiece());
+            gameBoard.addPiece(endPos, promotionPiece);
+        }
+
         // Team color changed after move is made
         setTeamTurn(currentTeamTurn == TeamColor.BLACK ? TeamColor.WHITE : TeamColor.BLACK);
     }
