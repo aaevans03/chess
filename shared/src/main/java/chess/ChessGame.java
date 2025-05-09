@@ -67,6 +67,9 @@ public class ChessGame {
 
         gameBoard.addPiece(startPos, null);
         gameBoard.addPiece(endPos, targetPiece);
+
+        // Team color changed after move is made
+        setTeamTurn(currentTeamTurn == TeamColor.BLACK ? TeamColor.WHITE : TeamColor.BLACK);
     }
 
     /**
