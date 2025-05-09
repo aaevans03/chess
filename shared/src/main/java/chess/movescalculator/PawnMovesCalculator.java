@@ -1,119 +1,119 @@
 package chess.movescalculator;
 
 import chess.*;
-import java.util.ArrayList;
+
 import java.util.Collection;
 
-public class PawnMovesCalculator implements PieceMovesCalculator {
+public class PawnMovesCalculator extends MovesCalculator {
 
-    private final Collection<ChessMove> pieceMoves;
-    private final ChessPosition myPosition;
-    private final ChessBoard board;
-    private final ChessGame.TeamColor pieceColor;
+    final ChessGame.TeamColor color;
+    final ChessGame.TeamColor white = ChessGame.TeamColor.WHITE;
+    final ChessGame.TeamColor black = ChessGame.TeamColor.BLACK;
 
-    public PawnMovesCalculator(ChessPosition myPosition, ChessBoard board, ChessGame.TeamColor pieceColor) {
-        pieceMoves = new ArrayList<>();
-        this.myPosition = myPosition;
-        this.board = board;
-        this.pieceColor = pieceColor;
+    PawnMovesCalculator(ChessBoard board, ChessPosition myPosition, ChessPiece piece) {
+        super(board, myPosition, piece);
+        this.color = piece.getTeamColor();
     }
 
-    // calculate the moves of a pawn
     public Collection<ChessMove> pieceMoves() {
-        var originalRow = myPosition.getRow();
-        var originalCol = myPosition.getColumn();
+        var initialRow = initialPos.getRow();
+        var initialCol = initialPos.getColumn();
 
-        // change case based on piece color
-        switch (pieceColor) {
-            // case WHITE: move up
-            case WHITE -> calculatePawnMovement(originalRow, originalCol, 1);
-            // case BLACK: move down
-            case BLACK -> calculatePawnMovement(originalRow, originalCol, -1);
+        switch (color) {
+            case WHITE -> {
+                // move pawn one forward
+                calculateOneSquare(initialRow, initialCol, 1, 0);
+
+                // calculate possible diagonal moves
+                calculateOneSquare(initialRow, initialCol, 1, -1);
+                calculateOneSquare(initialRow, initialCol, 1, 1);
+
+            }
+            case BLACK -> {
+                // move pawn one forward
+                calculateOneSquare(initialRow, initialCol, -1, 0);
+
+                // calculate possible diagonal moves
+                calculateOneSquare(initialRow, initialCol, -1, -1);
+                calculateOneSquare(initialRow, initialCol, -1, 1);
+            }
         }
-        return pieceMoves;
+
+        return newMoves;
     }
 
-    // calculate pawn movement based on if it is white or black
-    private void calculatePawnMovement(int originalRow, int originalCol, int rowDirection) {
-        var newRow = originalRow;
-        boolean inStartingSpot = false;
+    public void calculateOneSquare(int row, int col, int rowDirection, int colDirection) {
+        int initialRow = row;
+        row += rowDirection;
+        col += colDirection;
 
-        // WHITE piece and in starting row
-        if (rowDirection == 1 && originalRow == 2) {
-            inStartingSpot = true;
-        }
-        // BLACK piece and in starting row
-        else if (rowDirection == -1 && originalRow == 7) {
-            inStartingSpot = true;
-        }
+        if (positionInBounds(row, col)) {
 
-        // increment/decrement the row
-        newRow += rowDirection;
+            ChessPosition newPos = new ChessPosition(row, col);
 
-        // Loop through 3 possible positions (to account for capturing)
-        for (int i = -1; i <= 1; i++) {
-            // Calculate new column value
-            var newCol = originalCol + i;
+            // if you're looking to move diagonally and there's no piece there, simply return
+            if (colDirection != 0 && checkIfEmpty(newPos)) {
+                return;
+            }
 
-            // Calculate new position
-            var newPosition = new ChessPosition(newRow, newCol);
+            // if you're looking to move straight forward and there's a piece there, simply return
+            if (colDirection == 0 && !checkIfEmpty(newPos)) {
+                return;
+            }
 
-            // Check to see if the new coordinates are within the bounds
-            if (0 < newRow && newRow <= 8 && 0 < newCol && newCol <= 8) {
+            // if there's a piece there that's the same color, simply return
+            if (!checkIfEmpty(newPos) && board.getPiece(newPos).getTeamColor() == color) {
+                return;
+            }
 
-                // for moving straight ahead only
-                if (i == 0) {
-                    moveAhead(rowDirection, newPosition, newRow, newCol, inStartingSpot);
+            // if piece is WHITE and at end of board, promote
+            if (color == white && row == 8) {
+                addPromotionMoves(newPos);
+                return;
+            }
+
+            // if piece is BLACK and at end of board, promote
+            else if (color == black && row == 1) {
+                addPromotionMoves(newPos);
+                return;
+            }
+
+            // if you are at the start, move two spaces if there's not a piece there.
+            if (color == white && initialRow == 2) {
+                newMoves.add(new ChessMove(initialPos, newPos, null));
+
+                // check second space
+                ChessPosition secondMove = new ChessPosition(row + 1, col);
+                if (checkIfEmpty(secondMove)) {
+                    newMoves.add(new ChessMove(initialPos, secondMove, null));
                 }
+            }
+            else if (color == black && initialRow == 7) {
+                newMoves.add(new ChessMove(initialPos, newPos, null));
 
-                // Diagonal moves for capturing other pieces
-                if (i != 0 && board.getPiece(newPosition) != null && !board.getPiece(newPosition).getTeamColor().equals(pieceColor)) {
-                    // Check for a promotion, if there's no promotion then add a regular movement with no promotion piece
-                    if (!checkForPromotion(newRow, newCol, rowDirection)) {
-                        pieceMoves.add(new ChessMove(myPosition, new ChessPosition(newRow, newCol), null));
-                    }
+                // check second space
+                ChessPosition secondMove = new ChessPosition(row - 1, col);
+                if (checkIfEmpty(secondMove)) {
+                    newMoves.add(new ChessMove(initialPos, secondMove, null));
                 }
+            }
+
+            // if all else fails, simply add a move
+            else {
+                newMoves.add(new ChessMove(initialPos, newPos, null));
             }
         }
     }
 
-    private void moveAhead(int rowDirection, ChessPosition newPosition, int newRow, int newCol, boolean inStartingSpot) {
-        // if the piece is not blocked, you can move into the space
-        if (board.getPiece(newPosition) == null) {
-
-            // If there is no promotion, add a regular forward movement with no promotion piece
-            if (!checkForPromotion(newRow, newCol, rowDirection)) {
-                pieceMoves.add(new ChessMove(myPosition, new ChessPosition(newRow, newCol), null));
-
-                // If the pawn is in the starting spot, add another possible move
-                if (inStartingSpot) {
-                    if (board.getPiece(new ChessPosition(newRow + rowDirection, newCol)) == null) {
-                        pieceMoves.add(new ChessMove(myPosition, new ChessPosition(newRow + rowDirection, newCol), null));
-                    }
-                }
-            }
-        }
+    public void addPromotionMoves(ChessPosition newPos) {
+        newMoves.add(new ChessMove(initialPos, newPos, ChessPiece.PieceType.ROOK));
+        newMoves.add(new ChessMove(initialPos, newPos, ChessPiece.PieceType.KNIGHT));
+        newMoves.add(new ChessMove(initialPos, newPos, ChessPiece.PieceType.BISHOP));
+        newMoves.add(new ChessMove(initialPos, newPos, ChessPiece.PieceType.QUEEN));
     }
 
-    // Check for a promotion, add the possible promotion moves. Return true if there is one.
-    private boolean checkForPromotion(int newRow, int newCol, int rowDirection) {
-        // WHITE and at top of board
-        if (rowDirection == 1 && newRow == 8) {
-            promotePawn(newRow, newCol);
-            return true;
-        }
-        // BLACK and add bottom of board
-        else if (rowDirection == -1 && newRow == 1) {
-            promotePawn(newRow, newCol);
-            return true;
-        }
-        return false;
-    }
-
-    private void promotePawn(int newRow, int newCol) {
-        pieceMoves.add(new ChessMove(myPosition, new ChessPosition(newRow, newCol), ChessPiece.PieceType.QUEEN));
-        pieceMoves.add(new ChessMove(myPosition, new ChessPosition(newRow, newCol), ChessPiece.PieceType.BISHOP));
-        pieceMoves.add(new ChessMove(myPosition, new ChessPosition(newRow, newCol), ChessPiece.PieceType.ROOK));
-        pieceMoves.add(new ChessMove(myPosition, new ChessPosition(newRow, newCol), ChessPiece.PieceType.KNIGHT));
+    public boolean checkIfEmpty(ChessPosition newPos) {
+        return board.getPiece(newPos) == null;
     }
 }
+

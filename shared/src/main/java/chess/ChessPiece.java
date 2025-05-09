@@ -55,27 +55,7 @@ public class ChessPiece {
      */
     public Collection<ChessMove> pieceMoves(ChessBoard board, ChessPosition myPosition) {
         // Use the PieceMovesCalculator interface to get the piece moves
-        switch (type) {
-            case KING -> {
-                return new KingMovesCalculator(myPosition, board, pieceColor).pieceMoves();
-            }
-            case QUEEN -> {
-                return new QueenMovesCalculator(myPosition, board, pieceColor).pieceMoves();
-            }
-            case BISHOP -> {
-                return new BishopMovesCalculator(myPosition, board, pieceColor).pieceMoves();
-            }
-            case ROOK -> {
-                return new RookMovesCalculator(myPosition, board, pieceColor).pieceMoves();
-            }
-            case KNIGHT -> {
-                return new KnightMovesCalculator(myPosition, board, pieceColor).pieceMoves();
-            }
-            case PAWN -> {
-                return new PawnMovesCalculator(myPosition,board,pieceColor).pieceMoves();
-            }
-        }
-        return null;
+        return MovesCalculator.calculateMoves(board, myPosition, this);
     }
 
     @Override

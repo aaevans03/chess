@@ -1,31 +1,25 @@
 package chess.movescalculator;
 
-import chess.ChessBoard;
-import chess.ChessGame;
-import chess.ChessMove;
-import chess.ChessPosition;
+import chess.*;
 
 import java.util.Collection;
 
-public class QueenMovesCalculator extends StraightMovesCalculator implements PieceMovesCalculator {
+public class QueenMovesCalculator extends MovesCalculator {
 
-    // initialize QueenMovesCalculator using superclass
-    public QueenMovesCalculator(ChessPosition myPosition, ChessBoard board, ChessGame.TeamColor pieceColor) {
-        super(myPosition, board, pieceColor);
+    QueenMovesCalculator(ChessBoard board, ChessPosition myPosition, ChessPiece piece) {
+        super(board, myPosition, piece);
     }
 
-    // calculate the moves of a queen
     public Collection<ChessMove> pieceMoves() {
-        // algorithm: calculate all moves diagonal to the queen, and returns it in a ChessMove Collection
-        var originalRow = myPosition.getRow();
-        var originalCol = myPosition.getColumn();
+        var initialRow = initialPos.getRow();
+        var initialCol = initialPos.getColumn();
 
-        // 8 for loops: one in each direction
-        for (int i = -1; i <= 1; i++) {
-            for (int j = -1; j <= 1; j++) {
-                calculateOneDirection(originalRow, originalCol, i, j);
+        // calculate moves in 8 directions, use two loops
+        for (int rowDirection = -1; rowDirection <= 1; rowDirection++) {
+            for (int colDirection = -1; colDirection <= 1; colDirection++) {
+                calculateOneDirection(initialRow, initialCol, rowDirection, colDirection);
             }
         }
-        return pieceMoves;
+        return newMoves;
     }
 }

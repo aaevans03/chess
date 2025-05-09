@@ -1,31 +1,25 @@
 package chess.movescalculator;
 
-import chess.ChessBoard;
-import chess.ChessGame;
-import chess.ChessMove;
-import chess.ChessPosition;
+import chess.*;
 
 import java.util.Collection;
 
-public class RookMovesCalculator extends StraightMovesCalculator implements PieceMovesCalculator {
+public class RookMovesCalculator extends MovesCalculator {
 
-    // initialize RookMovesCalculator using superclass
-    public RookMovesCalculator(ChessPosition myPosition, ChessBoard board, ChessGame.TeamColor pieceColor) {
-        super(myPosition, board, pieceColor);
+    RookMovesCalculator(ChessBoard board, ChessPosition myPosition, ChessPiece piece) {
+        super(board, myPosition, piece);
     }
 
-    // calculate the moves of a rook
     public Collection<ChessMove> pieceMoves() {
-        // algorithm: calculate all moves diagonal to the rook, and returns it in a ChessMove Collection
-        var originalRow = myPosition.getRow();
-        var originalCol = myPosition.getColumn();
+        var initialRow = initialPos.getRow();
+        var initialCol = initialPos.getColumn();
 
-        // 4 for loops: one in each direction
-        calculateOneDirection(originalRow, originalCol, 1, 0);
-        calculateOneDirection(originalRow, originalCol, -1, 0);
-        calculateOneDirection(originalRow, originalCol, 0, 1);
-        calculateOneDirection(originalRow, originalCol, 0, -1);
+        // calculate moves in 4 directions
+        calculateOneDirection(initialRow, initialCol, 1, 0);
+        calculateOneDirection(initialRow, initialCol, -1, 0);
+        calculateOneDirection(initialRow, initialCol, 0, 1);
+        calculateOneDirection(initialRow, initialCol, 0, -1);
 
-        return pieceMoves;
+        return newMoves;
     }
 }
