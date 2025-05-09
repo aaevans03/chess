@@ -76,8 +76,65 @@ public class ChessGame {
         for (ChessMove move : allMoves) {
             // clone the board
             ChessBoard newBoard = gameBoard.cloneBoard();
+
+            // store the king's position
+            var newWhiteKingPos = whiteKingPos;
+            var newBlackKingPos = blackKingPos;
+
+            // make the move
+            ChessPosition startPos = move.getStartPosition();
+            ChessPosition endPos = move.getEndPosition();
+            ChessPiece targetPiece = newBoard.getPiece(startPos);
+
+            newBoard.addPiece(startPos, null);
+            newBoard.addPiece(endPos, targetPiece);
+
+            if (targetPiece.getPieceType() == ChessPiece.PieceType.KING && currentTeamTurn == TeamColor.WHITE) {
+                newWhiteKingPos = endPos;
+            }
+            if (targetPiece.getPieceType() == ChessPiece.PieceType.KING && currentTeamTurn == TeamColor.BLACK) {
+                newBlackKingPos = endPos;
+            }
+
+            boolean badMove = false;
+
+            // loop through all pieces on that board
+            for (int row = 1; row <= 8; row++) {
+                for (int col = 1; col <= 8; col++) {
+                    // target piece
+                    ChessPosition newPosition = new ChessPosition(row, col);
+                    ChessPiece newPiece = newBoard.getPiece(newPosition);
+
+                    // get the moves of that new piece
+                    if (newPiece != null && !newPosition.equals(endPos)) {
+                        var newPieceMoves = newPiece.pieceMoves(newBoard, newPosition);
+
+                        // iterate through this new list, see if it matches the square the king is on
+                        for (ChessMove newMove : newPieceMoves) {
+                            ChessPosition newEndPos = newMove.getEndPosition();
+
+                            switch (currentTeamTurn) {
+                                case WHITE -> {
+                                    if (newEndPos.equals(newWhiteKingPos)) {
+                                        badMove = true;
+                                    }
+                                }
+                                case BLACK -> {
+                                    if (newEndPos.equals(newBlackKingPos)) {
+                                        badMove = true;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            if (!badMove) {
+                validMoves.add(move);
+            }
         }
-        return allMoves;
+
+        return validMoves;
     }
 
     /**
