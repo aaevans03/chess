@@ -146,6 +146,14 @@ public class ChessGame {
         ChessPosition endPos = move.getEndPosition();
         ChessPiece targetPiece = gameBoard.getPiece(startPos);
 
+        // Check to see if it's an invalid move. If it's invalid, throw InvalidMoveException
+        var validMoves = validMoves(startPos);
+
+        if (targetPiece == null || !validMoves.contains(move) || targetPiece.getTeamColor() != currentTeamTurn) {
+            throw new InvalidMoveException();
+        }
+
+        // Make move
         gameBoard.addPiece(startPos, null);
         gameBoard.addPiece(endPos, targetPiece);
 
