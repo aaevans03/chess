@@ -63,13 +63,15 @@ public class ChessGame {
         }
         var allMoves = currentPiece.pieceMoves(gameBoard, startPosition);
 
-        // Process:
-        // 1. For every one of these possible moves, create a copy of the chess board with that move made.
-            // a. Loop through all pieces on that board to see if they can capture the king.
-                // i. If any piece can capture the king, it's automatically an invalid move. Return to step 1.
-                // ii. If a move is ok, add it to a Collection that stores valid moves.
-            // b. Finish looping through the moves.
-        // 2. Return the valid moves.
+        /*
+        Process:
+        1. For every one of these possible moves, create a copy of the chess board with that move made.
+            a. Loop through all pieces on that board to see if they can capture the king.
+                i. If any piece can capture the king, it's automatically an invalid move. Return to step 1.
+                ii. If a move is ok, add it to a Collection that stores valid moves.
+            b. Finish looping through the moves.
+        2. Return the valid moves.
+        */
 
         Collection<ChessMove> validMoves = new ArrayList<>();
 
@@ -77,9 +79,9 @@ public class ChessGame {
             // clone the board
             ChessBoard newBoard = gameBoard.cloneBoard();
 
-            // store the king's position
-            var newWhiteKingPos = whiteKingPos;
-            var newBlackKingPos = blackKingPos;
+            // Get the 2 kings' positions
+            var newWhiteKingPos = newBoard.locateKing(TeamColor.WHITE);
+            var newBlackKingPos = newBoard.locateKing(TeamColor.BLACK);
 
             // make the move
             ChessPosition startPos = move.getStartPosition();

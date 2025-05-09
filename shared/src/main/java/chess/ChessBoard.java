@@ -73,6 +73,10 @@ public class ChessBoard {
         addPiece(new ChessPosition(8,8), new ChessPiece(black, ChessPiece.PieceType.ROOK));
     }
 
+    /**
+     * Clones the chess board.
+     * @return a deep copy of the chess board.
+     */
     public ChessBoard cloneBoard() {
         ChessBoard clone = new ChessBoard();
 
@@ -87,6 +91,23 @@ public class ChessBoard {
             }
         }
         return clone;
+    }
+
+    /**
+     * Locates the king on the board.
+     * @param color the color of the king to locate.
+     * @return the position of the king
+     */
+    public ChessPosition locateKing(ChessGame.TeamColor color) {
+        for (int row = 0; row < 8; row++) {
+            for (int col = 0; col < 8; col++) {
+                var targetPiece = board[row][col];
+                if (targetPiece != null && targetPiece.getPieceType() == ChessPiece.PieceType.KING && targetPiece.getTeamColor() == color) {
+                    return new ChessPosition(row + 1, col + 1);
+                }
+            }
+        }
+        return null;
     }
 
     @Override
