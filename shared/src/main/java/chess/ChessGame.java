@@ -13,14 +13,10 @@ public class ChessGame {
 
     private ChessBoard gameBoard;
     private TeamColor currentTeamTurn;
-    private ChessPosition whiteKingPos;
-    private ChessPosition blackKingPos;
 
     public ChessGame() {
         gameBoard = new ChessBoard();
         gameBoard.resetBoard();
-        whiteKingPos = new ChessPosition(1,5);
-        blackKingPos = new ChessPosition(8,5);
         setTeamTurn(TeamColor.WHITE);
     }
 
@@ -157,16 +153,6 @@ public class ChessGame {
         gameBoard.addPiece(startPos, null);
         gameBoard.addPiece(endPos, targetPiece);
 
-        // If the piece moved is a king, update its position in this class
-        if (targetPiece.getPieceType() == ChessPiece.PieceType.KING) {
-            if (currentTeamTurn == TeamColor.BLACK) {
-                blackKingPos = endPos;
-            }
-            else {
-                whiteKingPos = endPos;
-            }
-        }
-
         // Pawn promotion
         if (move.getPromotionPiece() != null) {
             var promotionPiece = new ChessPiece(targetPiece.getTeamColor(), move.getPromotionPiece());
@@ -184,7 +170,44 @@ public class ChessGame {
      * @return True if the specified team is in check
      */
     public boolean isInCheck(TeamColor teamColor) {
-        throw new RuntimeException("Not implemented");
+        // Get the 2 kings' positions
+        var whiteKingPos = gameBoard.locateKing(TeamColor.WHITE);
+        var blackKingPos = gameBoard.locateKing(TeamColor.BLACK);
+
+        boolean inCheck = false;
+
+        // loop through all pieces on that board
+        for (int row = 1; row <= 8; row++) {
+            for (int col = 1; col <= 8; col++) {
+                // target piece
+                ChessPosition newPosition = new ChessPosition(row, col);
+                ChessPiece newPiece = gameBoard.getPiece(newPosition);
+
+                // get the moves of that new piece
+                if (newPiece != null) {
+                    var newPieceMoves = newPiece.pieceMoves(gameBoard, newPosition);
+
+                    // iterate through this new list, see if it matches the square the king is on
+                    for (ChessMove newMove : newPieceMoves) {
+                        ChessPosition newEndPos = newMove.getEndPosition();
+
+                        switch (teamColor) {
+                            case WHITE -> {
+                                if (newEndPos.equals(whiteKingPos)) {
+                                    inCheck = true;
+                                }
+                            }
+                            case BLACK -> {
+                                if (newEndPos.equals(blackKingPos)) {
+                                    inCheck = true;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return inCheck;
     }
 
     /**
