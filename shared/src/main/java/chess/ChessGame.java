@@ -255,7 +255,8 @@ public class ChessGame {
      * @return True if the specified team is in stalemate, otherwise false
      */
     public boolean isInStalemate(TeamColor teamColor) {
-        throw new RuntimeException("Not implemented");
+        // if the given team has no legal moves, but the king is not in immediate danger.
+        return isInCheckmate(teamColor) && !isInCheck(teamColor);
     }
 
     /**
