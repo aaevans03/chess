@@ -217,7 +217,34 @@ public class ChessGame {
      * @return True if the specified team is in checkmate
      */
     public boolean isInCheckmate(TeamColor teamColor) {
-        throw new RuntimeException("Not implemented");
+
+        /*
+        Process:
+        1. Loop through all the pieces of the color in the board.
+            a. Run validMoves to calculate the moves of each piece
+        2. If there are no valid moves, then CHECKMATE
+         */
+
+        boolean inCheckmate = true;
+
+        // loop through all pieces on that board
+        for (int row = 1; row <= 8; row++) {
+            for (int col = 1; col <= 8; col++) {
+                // target piece
+                ChessPosition newPosition = new ChessPosition(row, col);
+                ChessPiece newPiece = gameBoard.getPiece(newPosition);
+
+                // get the moves of that new piece
+                if (newPiece != null && newPiece.getTeamColor() == teamColor) {
+                    Collection<ChessMove> moves = validMoves(newPosition);
+
+                    if (!moves.isEmpty()) {
+                        inCheckmate = false;
+                    }
+                }
+            }
+        }
+        return inCheckmate;
     }
 
     /**
