@@ -17,3 +17,20 @@ While I scored 100% on the submission, my code quality is only at a 15%. Here ar
     - PawnMovesCalculator: line 70, 74, 75
 - Line Length: maximum is 150 characters
     - ChessMove at line 54
+
+## 2025.05.12
+
+### Phase 1 Special Algorithms
+
+`validMoves`:
+1. For every one of these possible moves, create a copy of the chess board with that move made.
+   - Loop through all pieces on that board to see if they can capture the king.
+     - If any piece can capture the king, it's automatically an invalid move. Return to step 1.
+     - If a move is ok, add it to a Collection that stores valid moves.
+   - Finish looping through the moves.
+2. Return the valid moves.
+
+`isInCheckmate`:
+1. Loop through all the pieces of the color in the board.
+   - Run validMoves to calculate the moves of each piece
+2. If there are no valid moves, then CHECKMATE

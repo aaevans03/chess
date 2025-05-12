@@ -46,7 +46,7 @@ public class ChessGame {
     }
 
     /**
-     * Gets a valid moves for a piece at the given location
+     * Gets a valid moves for a piece at the given location.
      *
      * @param startPosition the piece to get valid moves for
      * @return Set of valid moves for requested piece, or null if no piece at
@@ -63,23 +63,13 @@ public class ChessGame {
         // Get the piece color
         TeamColor curColor = currentPiece.getTeamColor();
 
-        /*
-        Process:
-        1. For every one of these possible moves, create a copy of the chess board with that move made.
-            a. Loop through all pieces on that board to see if they can capture the king.
-                i. If any piece can capture the king, it's automatically an invalid move. Return to step 1.
-                ii. If a move is ok, add it to a Collection that stores valid moves.
-            b. Finish looping through the moves.
-        2. Return the valid moves.
-        */
-
+        // Loop through all possible moves and determine if they do not put the king in check
         Collection<ChessMove> validMoves = new ArrayList<>();
-
         for (ChessMove move : allMoves) {
-            // clone the board
+            // Clone the board
             ChessBoard newBoard = gameBoard.cloneBoard();
 
-            // make the move
+            // Make the move
             ChessPosition startPos = move.getStartPosition();
             ChessPosition endPos = move.getEndPosition();
             ChessPiece targetPiece = newBoard.getPiece(startPos);
@@ -87,48 +77,11 @@ public class ChessGame {
             newBoard.addPiece(startPos, null);
             newBoard.addPiece(endPos, targetPiece);
 
-            // Get the 2 kings' positions
-            var newWhiteKingPos = newBoard.locateKing(TeamColor.WHITE);
-            var newBlackKingPos = newBoard.locateKing(TeamColor.BLACK);
-
-            boolean badMove = false;
-
-            // loop through all pieces on that board
-            for (int row = 1; row <= 8; row++) {
-                for (int col = 1; col <= 8; col++) {
-                    // target piece
-                    ChessPosition newPosition = new ChessPosition(row, col);
-                    ChessPiece newPiece = newBoard.getPiece(newPosition);
-
-                    // get the moves of that new piece
-                    if (newPiece != null && !newPosition.equals(endPos)) {
-                        var newPieceMoves = newPiece.pieceMoves(newBoard, newPosition);
-
-                        // iterate through this new list, see if it matches the square the king is on
-                        for (ChessMove newMove : newPieceMoves) {
-                            ChessPosition newEndPos = newMove.getEndPosition();
-
-                            switch (curColor) {
-                                case WHITE -> {
-                                    if (newEndPos.equals(newWhiteKingPos)) {
-                                        badMove = true;
-                                    }
-                                }
-                                case BLACK -> {
-                                    if (newEndPos.equals(newBlackKingPos)) {
-                                        badMove = true;
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-            if (!badMove) {
+            // Check to see if the king is in check after that move
+            if (!isKingInCheck(newBoard,curColor)) {
                 validMoves.add(move);
             }
         }
-
         return validMoves;
     }
 
@@ -171,9 +124,19 @@ public class ChessGame {
      * @return True if the specified team is in check
      */
     public boolean isInCheck(TeamColor teamColor) {
+        return isKingInCheck(gameBoard,teamColor);
+    }
+
+    /**
+     * Helper function to determine if king is in check given a board
+     * @param board the chess board to run on
+     * @param teamColor the team color to run with
+     * @return true if king is in check
+     */
+    private boolean isKingInCheck(ChessBoard board, TeamColor teamColor) {
         // Get the 2 kings' positions
-        var whiteKingPos = gameBoard.locateKing(TeamColor.WHITE);
-        var blackKingPos = gameBoard.locateKing(TeamColor.BLACK);
+        var whiteKingPos = board.locateKing(TeamColor.WHITE);
+        var blackKingPos = board.locateKing(TeamColor.BLACK);
 
         boolean inCheck = false;
 
@@ -182,11 +145,11 @@ public class ChessGame {
             for (int col = 1; col <= 8; col++) {
                 // target piece
                 ChessPosition newPosition = new ChessPosition(row, col);
-                ChessPiece newPiece = gameBoard.getPiece(newPosition);
+                ChessPiece newPiece = board.getPiece(newPosition);
 
                 // get the moves of that new piece
                 if (newPiece != null) {
-                    var newPieceMoves = newPiece.pieceMoves(gameBoard, newPosition);
+                    var newPieceMoves = newPiece.pieceMoves(board, newPosition);
 
                     // iterate through this new list, see if it matches the square the king is on
                     for (ChessMove newMove : newPieceMoves) {
@@ -218,14 +181,6 @@ public class ChessGame {
      * @return True if the specified team is in checkmate
      */
     public boolean isInCheckmate(TeamColor teamColor) {
-
-        /*
-        Process:
-        1. Loop through all the pieces of the color in the board.
-            a. Run validMoves to calculate the moves of each piece
-        2. If there are no valid moves, then CHECKMATE
-         */
-
         boolean inCheckmate = true;
 
         // loop through all pieces on that board
