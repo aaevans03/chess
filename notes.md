@@ -34,3 +34,9 @@ While I scored 100% on the submission, my code quality is only at a 15%. Here ar
 1. Loop through all the pieces of the color in the board.
    - Run validMoves to calculate the moves of each piece
 2. If there are no valid moves, then CHECKMATE
+
+## 2025.05.14
+
+Completed Phase 2 of the Chess Project, with the following server design sequence diagram:
+
+![](chess_server_design.svg)
