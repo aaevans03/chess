@@ -2,11 +2,12 @@ package server;
 
 import com.google.gson.Gson;
 import service.UserService;
+import service.request.LoginRequest;
 import service.request.RegisterRequest;
 import spark.Request;
 import spark.Response;
 
-public class RegisterHandler {
+public class UserHandler {
     public static Object handleRegister(Request request, Response response) {
         // decode object, make new RegisterRequest
         Gson gson = new Gson();
@@ -14,6 +15,18 @@ public class RegisterHandler {
 
         // send RegisterRequest object to UserService and try registering
         var result = new UserService().register(input);
+
+        // encode result and return
+        return gson.toJson(result);
+    }
+
+    public static Object handleLogin(Request request, Response response) {
+        // decode object, make new LoginRequest
+        Gson gson = new Gson();
+        LoginRequest input = gson.fromJson(request.body(), LoginRequest.class);
+
+        // send LoginRequest object to UserService and try logging in
+        var result = new UserService().login(input);
 
         // encode result and return
         return gson.toJson(result);
