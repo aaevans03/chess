@@ -13,6 +13,7 @@ public class Server {
         // USER
         Spark.post("/user", UserHandler::handleRegister);
         Spark.post("/session", UserHandler::handleLogin);
+        Spark.delete("/session", UserHandler::handleLogout);
 
         // CLEAR
         Spark.delete("/db", ClearHandler::handleClear);

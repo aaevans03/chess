@@ -3,6 +3,7 @@ package server;
 import com.google.gson.Gson;
 import service.UserService;
 import service.request.LoginRequest;
+import service.request.LogoutRequest;
 import service.request.RegisterRequest;
 import spark.Request;
 import spark.Response;
@@ -29,6 +30,18 @@ public class UserHandler {
         var result = new UserService().login(input);
 
         // encode result and return
+        return gson.toJson(result);
+    }
+
+    public static Object handleLogout(Request request, Response response) {
+        // decode object, make new LogoutRequest
+        var input = request.headers("authorization");
+
+        // send LogoutRequest object to UserService and try logging out
+        var result = new UserService().logout(new LogoutRequest(input));
+
+        // encode result and return
+        Gson gson = new Gson();
         return gson.toJson(result);
     }
 }

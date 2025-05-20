@@ -4,8 +4,10 @@ import dataaccess.MemoryAuthDAO;
 import dataaccess.MemoryUserDAO;
 import model.UserData;
 import service.request.LoginRequest;
+import service.request.LogoutRequest;
 import service.request.RegisterRequest;
 import service.result.LoginResult;
+import service.result.LogoutResult;
 import service.result.RegisterResult;
 
 import java.util.Objects;
@@ -48,5 +50,20 @@ public class UserService {
         var authToken = authDB.createAuthData(username);
 
         return new LoginResult(username, authToken);
+    }
+
+    public LogoutResult logout(LogoutRequest logoutRequest) {
+
+        var authToken = logoutRequest.authToken();
+
+        var dbData = authDB.getAuthData(authToken);
+
+        if (dbData == null) {
+            // TODO: Add InvalidAuthTokenException
+        }
+
+        authDB.deleteAuthData(dbData);
+
+        return new LogoutResult();
     }
 }
