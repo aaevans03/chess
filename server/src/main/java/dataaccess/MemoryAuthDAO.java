@@ -7,10 +7,12 @@ import java.util.UUID;
 
 public class MemoryAuthDAO implements AuthDAO {
     // A map of auth data: find AuthData given an authToken
-    HashMap<String, AuthData> memoryAuthData;
+    static HashMap<String, AuthData> memoryAuthData = new HashMap<>();
 
-    MemoryAuthDAO() {
-        memoryAuthData = new HashMap<>();
+    public MemoryAuthDAO() {
+        // add values for testing
+        memoryAuthData.put("12345", new AuthData("12345", "alex"));
+        memoryAuthData.put("54321", new AuthData("54321", "bob"));
     }
 
     @Override

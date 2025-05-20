@@ -8,11 +8,13 @@ import java.util.TreeMap;
 
 public class MemoryGameDAO implements GameDAO {
     // A map of game data: find GameData given a game ID
-    TreeMap<Integer, GameData> memoryGameData;
+    static TreeMap<Integer, GameData> memoryGameData = new TreeMap<>();
     int gameIterator = 0;
 
-    MemoryGameDAO() {
-        memoryGameData = new TreeMap<>();
+    public MemoryGameDAO() {
+        // add values for testing
+        memoryGameData.put(1234, new GameData(1234, "alex", "bob", "the game", new ChessGame()));
+        memoryGameData.put(4567, new GameData(4567, "jeff", "bill", "another game", new ChessGame()));
     }
 
     @Override

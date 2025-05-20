@@ -6,10 +6,12 @@ import java.util.HashMap;
 
 public class MemoryUserDAO implements UserDAO {
     // A map of user data: find UserData given a username
-    HashMap<String, UserData> memoryUserData;
+    static HashMap<String, UserData> memoryUserData = new HashMap<>();
 
-    MemoryUserDAO() {
-        memoryUserData = new HashMap<>();
+    public MemoryUserDAO() {
+        // add values for testing
+        memoryUserData.put("alex", new UserData("alex", "123", "xd"));
+        memoryUserData.put("bob", new UserData("bob", "123", "xd"));
     }
 
     @Override
