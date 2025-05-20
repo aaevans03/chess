@@ -10,6 +10,10 @@ public class Server {
         Spark.staticFiles.location("web");
 
         // Register your endpoints and handle exceptions here.
+        // USER
+        Spark.post("/user", RegisterHandler::handleRegister);
+
+        // CLEAR
         Spark.delete("/db", ClearHandler::handleClear);
 
         Spark.awaitInitialization();

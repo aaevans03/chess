@@ -1,3 +1,4 @@
 package service.result;
 
-public class ClearResult {}
+public class ClearResult {
+}
