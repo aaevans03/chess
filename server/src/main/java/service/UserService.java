@@ -3,10 +3,7 @@ package service;
 import dataaccess.MemoryAuthDAO;
 import dataaccess.MemoryUserDAO;
 import model.UserData;
-import server.exceptions.AlreadyAuthorizedException;
-import server.exceptions.AlreadyTakenException;
-import server.exceptions.InvalidAuthTokenException;
-import server.exceptions.InvalidCredentialsException;
+import server.exceptions.*;
 import service.request.LoginRequest;
 import service.request.LogoutRequest;
 import service.request.RegisterRequest;
@@ -26,6 +23,14 @@ public class UserService {
         var password = registerRequest.password();
         var email = registerRequest.email();
 
+        debug();
+        System.out.println(username + " " + password);
+
+        // 400, bad request
+        if (username == null || password == null) {
+            throw new InvalidInputException();
+        }
+
         // 403, already taken
         if (userDB.getUser(username) != null) {
             throw new AlreadyTakenException();
@@ -42,7 +47,15 @@ public class UserService {
         var username = loginRequest.username();
         var password = loginRequest.password();
 
+        debug();
+        System.out.println(username + " " + password);
+
         var dbData = userDB.getUser(username);
+
+        // 400, bad request
+        if (username == null || password == null) {
+            throw new InvalidInputException();
+        }
 
         // 401, unauthorized
         if (dbData == null) {
@@ -53,11 +66,13 @@ public class UserService {
         if (!Objects.equals(password, dbData.password())) {
             throw new InvalidCredentialsException();
         }
-
+/*
         // 400, bad request
         if (authDB.searchForUser(username)) {
+            System.out.println("Found a user bro");
             throw new AlreadyAuthorizedException();
         }
+*/
 
         var authToken = authDB.createAuthData(username);
 
@@ -67,6 +82,8 @@ public class UserService {
     public LogoutResult logout(LogoutRequest logoutRequest) {
 
         var authToken = logoutRequest.authToken();
+
+        debug();
 
         var dbData = authDB.getAuthData(authToken);
 
@@ -78,5 +95,18 @@ public class UserService {
         authDB.deleteAuthData(dbData);
 
         return new LogoutResult();
+    }
+
+    private void debug() {
+        for (var yes : userDB.getMap().values()) {
+            System.out.println("\nusername: " + yes.username());
+            System.out.println("password: " + yes.password());
+            System.out.println("email: " + yes.email());
+        }
+
+        for (var yes : authDB.getMap().values()) {
+            System.out.println("authToken: " + yes.authToken());
+            System.out.println("username: " + yes.username());
+        }
     }
 }

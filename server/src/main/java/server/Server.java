@@ -23,6 +23,7 @@ public class Server {
         Spark.delete("/db", ClearHandler::handleClear);
 
         // HANDLE EXCEPTIONS
+        Spark.exception(InvalidInputException.class, InvalidInputException::errorHandler);
         Spark.exception(AlreadyTakenException.class, AlreadyTakenException::errorHandler);
         Spark.exception(InvalidCredentialsException.class, InvalidCredentialsException::errorHandler);
         Spark.exception(AlreadyAuthorizedException.class, AlreadyAuthorizedException::errorHandler);

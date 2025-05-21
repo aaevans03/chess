@@ -13,8 +13,6 @@ public class MemoryGameDAO implements GameDAO {
 
     public MemoryGameDAO() {
         // add values for testing
-        memoryGameData.put(1234, new GameData(1234, "alex", "bob", "the game", new ChessGame()));
-        memoryGameData.put(4567, new GameData(4567, "jeff", "bill", "another game", new ChessGame()));
     }
 
     @Override

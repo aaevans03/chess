@@ -10,8 +10,6 @@ public class MemoryUserDAO implements UserDAO {
 
     public MemoryUserDAO() {
         // add values for testing
-        memoryUserData.put("alex", new UserData("alex", "123", "xd"));
-        memoryUserData.put("bob", new UserData("bob", "123", "xd"));
     }
 
     @Override
@@ -27,5 +25,10 @@ public class MemoryUserDAO implements UserDAO {
     @Override
     public UserData getUser(String username) {
         return memoryUserData.get(username);
+    }
+
+    // for debugging
+    public HashMap<String, UserData> getMap() {
+        return memoryUserData;
     }
 }
