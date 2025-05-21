@@ -19,7 +19,7 @@ public class Server {
 
         // GAME
         // GET /game (list of games)
-        // POST /game (create a new game)
+        Spark.post("/game", GameHandler::handleCreate);
         // PUT /game (join a game)
 
         // CLEAR

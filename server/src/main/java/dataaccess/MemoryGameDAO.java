@@ -9,7 +9,7 @@ import java.util.TreeMap;
 public class MemoryGameDAO implements GameDAO {
     // A map of game data: find GameData given a game ID
     static TreeMap<Integer, GameData> memoryGameData = new TreeMap<>();
-    int gameIterator = 0;
+    int gameIterator = 1;
 
     public MemoryGameDAO() {
         // add values for testing
