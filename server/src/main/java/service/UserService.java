@@ -4,6 +4,7 @@ import dataaccess.MemoryAuthDAO;
 import dataaccess.MemoryUserDAO;
 import model.UserData;
 import server.AlreadyTakenException;
+import server.InvalidCredentialsException;
 import service.request.LoginRequest;
 import service.request.LogoutRequest;
 import service.request.RegisterRequest;
@@ -17,7 +18,7 @@ public class UserService {
     MemoryUserDAO userDB = new MemoryUserDAO();
     MemoryAuthDAO authDB = new MemoryAuthDAO();
 
-    public RegisterResult register(RegisterRequest registerRequest) {
+    public RegisterResult register(RegisterRequest registerRequest) throws AlreadyTakenException {
 
         var username = registerRequest.username();
         var password = registerRequest.password();
@@ -33,7 +34,7 @@ public class UserService {
         return new RegisterResult(username, authToken);
     }
 
-    public LoginResult login(LoginRequest loginRequest) {
+    public LoginResult login(LoginRequest loginRequest) throws InvalidCredentialsException {
 
         var username = loginRequest.username();
         var password = loginRequest.password();
@@ -41,11 +42,15 @@ public class UserService {
         var dbData = userDB.getUser(username);
 
         if (dbData == null) {
-            // TODO: add InvalidCredentialsException
+            throw new InvalidCredentialsException();
         }
 
         if (!Objects.equals(password, dbData.password())) {
-            // TODO: add InvalidCredentialsException
+            throw new InvalidCredentialsException();
+        }
+
+        if (authDB.searchForUser(username)) {
+            throw new InvalidCredentialsException();
         }
 
         var authToken = authDB.createAuthData(username);

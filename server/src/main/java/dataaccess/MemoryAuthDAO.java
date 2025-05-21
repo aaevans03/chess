@@ -8,6 +8,7 @@ import java.util.UUID;
 public class MemoryAuthDAO implements AuthDAO {
     // A map of auth data: find AuthData given an authToken
     static HashMap<String, AuthData> memoryAuthData = new HashMap<>();
+    static HashMap<String, String> memoryAuthDataReversed = new HashMap<>();
 
     public MemoryAuthDAO() {
         // add values for testing
@@ -18,12 +19,14 @@ public class MemoryAuthDAO implements AuthDAO {
     @Override
     public void clearAuthData() {
         memoryAuthData.clear();
+        memoryAuthDataReversed.clear();
     }
 
     @Override
     public String createAuthData(String username) {
         String newAuthToken = generateAuthToken();
         memoryAuthData.put(newAuthToken, new AuthData(newAuthToken, username));
+        memoryAuthDataReversed.put(newAuthToken, username);
         return newAuthToken;
     }
 
@@ -35,6 +38,15 @@ public class MemoryAuthDAO implements AuthDAO {
     @Override
     public void deleteAuthData(AuthData authData) {
         memoryAuthData.remove(authData.username(), authData);
+    }
+
+    public boolean searchForUser(String username) {
+        for (var key : memoryAuthData.values()) {
+            if (key.username().equals(username)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private String generateAuthToken() {

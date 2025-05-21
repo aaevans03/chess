@@ -23,8 +23,8 @@ public class Server {
 
         // HANDLE EXCEPTIONS
         Spark.exception(AlreadyTakenException.class, AlreadyTakenException::errorHandler);
-
-        Spark.exception(Exception.class, this::errorHandler);
+        Spark.exception(InvalidCredentialsException.class, InvalidCredentialsException::errorHandler);
+        Spark.exception(Exception.class, ServerException::errorHandler);
 
         Spark.awaitInitialization();
         return Spark.port();
