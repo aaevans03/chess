@@ -1,6 +1,5 @@
 package server;
 
-import com.google.gson.Gson;
 import dataaccess.MemoryAuthDAO;
 import dataaccess.MemoryGameDAO;
 import dataaccess.MemoryUserDAO;
@@ -26,13 +25,9 @@ public class ClearHandler {
 
     public static Object handleClear(Request request, Response response) {
 
-//        System.out.println("Called " + request.pathInfo());
-//        testPrinting();
-
         ClearResult result = ClearService.clear();
 
-//        testPrinting();
-
-        return new Gson().toJson(result);
+        var objectEncoderDecoder = new ObjectEncoderDecoder();
+        return objectEncoderDecoder.encode(result);
     }
 }

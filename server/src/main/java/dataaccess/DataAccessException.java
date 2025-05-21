@@ -1,6 +1,6 @@
 package dataaccess;
 
-import com.google.gson.Gson;
+import server.ObjectEncoderDecoder;
 import spark.Request;
 import spark.Response;
 
@@ -18,7 +18,8 @@ public class DataAccessException extends Exception{
     }
 
     public static void errorHandler(Exception e, Request req, Response res) {
-        var body = new Gson().toJson(Map.of("message", String.format("Error: %s", e.getMessage())));
+        var objectEncoderDecoder = new ObjectEncoderDecoder();
+        var body = objectEncoderDecoder.encode(Map.of("message", String.format("Error: %s", e.getMessage())));
         res.type("application/json");
         res.status(400);
         res.body(body);
