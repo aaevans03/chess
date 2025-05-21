@@ -1,10 +1,8 @@
 package server;
 
-import com.google.gson.Gson;
+import dataaccess.DataAccessException;
 import server.exceptions.*;
 import spark.*;
-
-import java.util.Map;
 
 public class Server {
 
@@ -28,6 +26,7 @@ public class Server {
         Spark.exception(InvalidCredentialsException.class, InvalidCredentialsException::errorHandler);
         Spark.exception(AlreadyAuthorizedException.class, AlreadyAuthorizedException::errorHandler);
         Spark.exception(InvalidAuthTokenException.class, InvalidAuthTokenException::errorHandler);
+        Spark.exception(DataAccessException.class, DataAccessException::errorHandler);
         Spark.exception(Exception.class, ServerException::errorHandler);
 
         Spark.awaitInitialization();
@@ -37,13 +36,5 @@ public class Server {
     public void stop() {
         Spark.stop();
         Spark.awaitStop();
-    }
-
-    private Object errorHandler (Exception e, Request req, Response res) {
-        var body = new Gson().toJson(Map.of("message", String.format("%s", e.getMessage()), "success", false));
-        res.type("application/json");
-        res.status(500);
-        res.body(body);
-        return body;
     }
 }
