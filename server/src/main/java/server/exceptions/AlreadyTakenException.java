@@ -1,15 +1,15 @@
-package server;
+package server.exceptions;
 
 import spark.Request;
 import spark.Response;
 
-public class InvalidCredentialsException extends RuntimeException {
-    public InvalidCredentialsException() {
-        super("unauthorized");
+public class AlreadyTakenException extends ServerException {
+    public AlreadyTakenException() {
+        super("username already taken");
     }
 
     public static void errorHandler(Exception e, Request req, Response res) {
         ServerException.errorHandler(e, req, res);
-        res.status(401);
+        res.status(403);
     }
 }

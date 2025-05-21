@@ -1,6 +1,7 @@
 package server;
 
 import com.google.gson.Gson;
+import server.exceptions.*;
 import spark.*;
 
 import java.util.Map;
@@ -24,6 +25,8 @@ public class Server {
         // HANDLE EXCEPTIONS
         Spark.exception(AlreadyTakenException.class, AlreadyTakenException::errorHandler);
         Spark.exception(InvalidCredentialsException.class, InvalidCredentialsException::errorHandler);
+        Spark.exception(AlreadyAuthorizedException.class, AlreadyAuthorizedException::errorHandler);
+        Spark.exception(InvalidAuthTokenException.class, InvalidAuthTokenException::errorHandler);
         Spark.exception(Exception.class, ServerException::errorHandler);
 
         Spark.awaitInitialization();

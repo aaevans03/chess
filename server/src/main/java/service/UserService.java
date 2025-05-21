@@ -3,8 +3,10 @@ package service;
 import dataaccess.MemoryAuthDAO;
 import dataaccess.MemoryUserDAO;
 import model.UserData;
-import server.AlreadyTakenException;
-import server.InvalidCredentialsException;
+import server.exceptions.AlreadyAuthorizedException;
+import server.exceptions.AlreadyTakenException;
+import server.exceptions.InvalidAuthTokenException;
+import server.exceptions.InvalidCredentialsException;
 import service.request.LoginRequest;
 import service.request.LogoutRequest;
 import service.request.RegisterRequest;
@@ -24,6 +26,7 @@ public class UserService {
         var password = registerRequest.password();
         var email = registerRequest.email();
 
+        // 403, already taken
         if (userDB.getUser(username) != null) {
             throw new AlreadyTakenException();
         }
@@ -41,16 +44,19 @@ public class UserService {
 
         var dbData = userDB.getUser(username);
 
+        // 401, unauthorized
         if (dbData == null) {
             throw new InvalidCredentialsException();
         }
 
+        // 401, unauthorized
         if (!Objects.equals(password, dbData.password())) {
             throw new InvalidCredentialsException();
         }
 
+        // 400, bad request
         if (authDB.searchForUser(username)) {
-            throw new InvalidCredentialsException();
+            throw new AlreadyAuthorizedException();
         }
 
         var authToken = authDB.createAuthData(username);
@@ -64,8 +70,9 @@ public class UserService {
 
         var dbData = authDB.getAuthData(authToken);
 
+        // 401, unauthorized
         if (dbData == null) {
-            // TODO: Add InvalidAuthTokenException
+            throw new InvalidAuthTokenException();
         }
 
         authDB.deleteAuthData(dbData);

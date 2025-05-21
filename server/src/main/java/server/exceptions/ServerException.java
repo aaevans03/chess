@@ -1,4 +1,4 @@
-package server;
+package server.exceptions;
 
 import com.google.gson.Gson;
 import spark.Request;
