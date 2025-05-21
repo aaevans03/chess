@@ -1,12 +1,12 @@
 package service;
 
 import chess.ChessGame;
+import dataaccess.DataAccessException;
 import dataaccess.MemoryAuthDAO;
 import dataaccess.MemoryGameDAO;
 import dataaccess.MemoryUserDAO;
 import server.exceptions.AlreadyTakenException;
 import server.exceptions.InvalidAuthTokenException;
-import server.exceptions.InvalidInputException;
 import service.request.CreateRequest;
 import service.request.JoinRequest;
 import service.request.ListRequest;
@@ -32,7 +32,7 @@ public class GameService {
         return new ListResult(gameDB.listGames());
     }
 
-    public CreateResult create(CreateRequest createRequest) {
+    public CreateResult create(CreateRequest createRequest) throws DataAccessException {
 
         var authToken = createRequest.authToken();
         var gameName = createRequest.gameName();
@@ -41,7 +41,7 @@ public class GameService {
 
         // 400, bad request
         if (gameName == null) {
-            throw new InvalidInputException();
+            throw new DataAccessException("no game name provided");
         }
 
         // 401, unauthorized
@@ -54,7 +54,7 @@ public class GameService {
         return new CreateResult(gameID);
     }
 
-    public JoinResult join(JoinRequest joinRequest) {
+    public JoinResult join(JoinRequest joinRequest) throws DataAccessException {
 
         var authToken = joinRequest.authToken();
         var playerColor = joinRequest.playerColor();
@@ -63,8 +63,13 @@ public class GameService {
         var authData = authDB.getAuthData(authToken);
 
         // 400, bad request
-        if (playerColor == null || gameID == 0) {
-            throw new InvalidInputException();
+        if (playerColor == null) {
+            throw new DataAccessException("no team color provided");
+        }
+
+        // 400, bad request
+        if (gameID == 0) {
+            throw new DataAccessException("invalid game ID entered");
         }
 
         // 401, unauthorized
@@ -76,8 +81,7 @@ public class GameService {
 
         // 400, invalid game ID
         if (game == null) {
-            // TODO: change this exception type
-            throw new InvalidInputException();
+            throw new DataAccessException("invalid game ID");
         }
 
         switch (playerColor) {

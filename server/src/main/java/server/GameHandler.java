@@ -1,5 +1,6 @@
 package server;
 
+import dataaccess.DataAccessException;
 import service.GameService;
 import service.request.CreateRequest;
 import service.request.JoinRequest;
@@ -20,7 +21,7 @@ public class GameHandler {
         return objectEncoderDecoder.encode(result);
     }
 
-    public static Object handleCreate(Request request, Response response) {
+    public static Object handleCreate(Request request, Response response) throws DataAccessException {
         // decode object, make new CreateRequest
         var objectEncoderDecoder = new ObjectEncoderDecoder();
 
@@ -34,7 +35,7 @@ public class GameHandler {
         return objectEncoderDecoder.encode(result);
     }
 
-    public static Object handleJoin(Request request, Response response) {
+    public static Object handleJoin(Request request, Response response) throws DataAccessException {
         // decode object, make new JoinRequest
         var objectEncoderDecoder = new ObjectEncoderDecoder();
 
