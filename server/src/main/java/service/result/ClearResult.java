@@ -1,4 +1,4 @@
 package service.result;
 
-public class ClearResult {
+public record ClearResult() {
 }

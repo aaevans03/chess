@@ -20,7 +20,7 @@ public class Server {
         // GAME
         Spark.get("/game", GameHandler::handleList);
         Spark.post("/game", GameHandler::handleCreate);
-        // PUT /game (join a game)
+        Spark.put("/game", GameHandler::handleJoin);
 
         // CLEAR
         Spark.delete("/db", ClearHandler::handleClear);

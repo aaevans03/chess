@@ -23,9 +23,6 @@ public class UserService {
         var password = registerRequest.password();
         var email = registerRequest.email();
 
-        debug();
-        System.out.println(username + " " + password);
-
         // 400, bad request
         if (username == null || password == null) {
             throw new InvalidInputException();
@@ -46,9 +43,6 @@ public class UserService {
 
         var username = loginRequest.username();
         var password = loginRequest.password();
-
-        debug();
-        System.out.println(username + " " + password);
 
         var dbData = userDB.getUser(username);
 
@@ -82,8 +76,6 @@ public class UserService {
     public LogoutResult logout(LogoutRequest logoutRequest) {
 
         var authToken = logoutRequest.authToken();
-
-        debug();
 
         var dbData = authDB.getAuthData(authToken);
 

@@ -2,6 +2,7 @@ package server;
 
 import service.GameService;
 import service.request.CreateRequest;
+import service.request.JoinRequest;
 import service.request.ListRequest;
 import spark.Request;
 import spark.Response;
@@ -28,6 +29,20 @@ public class GameHandler {
 
         // send CreateRequest object to GameService and try registering
         var result = new GameService().create(input);
+
+        // encode result and return
+        return objectEncoderDecoder.encode(result);
+    }
+
+    public static Object handleJoin(Request request, Response response) {
+        // decode object, make new JoinRequest
+        var objectEncoderDecoder = new ObjectEncoderDecoder();
+
+        JoinRequest input = (JoinRequest) objectEncoderDecoder.decode(request.body(), JoinRequest.class);
+        input = new JoinRequest(request.headers("authorization"), input.playerColor(), input.gameID());
+
+        // send JoinRequest object to GameService and try joining
+        var result = new GameService().join(input);
 
         // encode result and return
         return objectEncoderDecoder.encode(result);

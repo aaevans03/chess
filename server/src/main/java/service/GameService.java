@@ -1,13 +1,17 @@
 package service;
 
+import chess.ChessGame;
 import dataaccess.MemoryAuthDAO;
 import dataaccess.MemoryGameDAO;
 import dataaccess.MemoryUserDAO;
+import server.exceptions.AlreadyTakenException;
 import server.exceptions.InvalidAuthTokenException;
 import server.exceptions.InvalidInputException;
 import service.request.CreateRequest;
+import service.request.JoinRequest;
 import service.request.ListRequest;
 import service.result.CreateResult;
+import service.result.JoinResult;
 import service.result.ListResult;
 
 public class GameService {
@@ -33,13 +37,7 @@ public class GameService {
         var authToken = createRequest.authToken();
         var gameName = createRequest.gameName();
 
-        System.out.println(authToken);
-        System.out.println(gameName);
-
         var authData = authDB.getAuthData(authToken);
-
-        debug();
-        System.out.println(authData);
 
         // 400, bad request
         if (gameName == null) {
@@ -54,6 +52,51 @@ public class GameService {
         var gameID = gameDB.createGame(gameName);
 
         return new CreateResult(gameID);
+    }
+
+    public JoinResult join(JoinRequest joinRequest) {
+
+        var authToken = joinRequest.authToken();
+        var playerColor = joinRequest.playerColor();
+        var gameID = joinRequest.gameID();
+
+        var authData = authDB.getAuthData(authToken);
+
+        // 400, bad request
+        if (playerColor == null || gameID == 0) {
+            throw new InvalidInputException();
+        }
+
+        // 401, unauthorized
+        if (authData == null) {
+            throw new InvalidAuthTokenException();
+        }
+
+        var game = gameDB.getGame(gameID);
+
+        // 400, invalid game ID
+        if (game == null) {
+            // TODO: change this exception type
+            throw new InvalidInputException();
+        }
+
+        switch (playerColor) {
+            case WHITE -> {
+                // 403, game already taken
+                if (game.whiteUsername() != null) {
+                    throw new AlreadyTakenException();
+                }
+                gameDB.updateGame(gameID, authData.username(), ChessGame.TeamColor.WHITE);
+            }
+            case BLACK -> {
+                // 403, game already taken
+                if (game.blackUsername() != null) {
+                    throw new AlreadyTakenException();
+                }
+                gameDB.updateGame(gameID, authData.username(), ChessGame.TeamColor.BLACK);
+            }
+        }
+        return new JoinResult();
     }
 
     private void debug() {
