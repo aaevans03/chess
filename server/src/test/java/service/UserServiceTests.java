@@ -9,13 +9,13 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import server.exceptions.AlreadyTakenException;
+import server.exceptions.InvalidAuthTokenException;
 import server.exceptions.InvalidCredentialsException;
 import service.request.LoginRequest;
+import service.request.LogoutRequest;
 import service.request.RegisterRequest;
 
 import java.util.HashMap;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 class UserServiceTests {
 
@@ -96,12 +96,38 @@ class UserServiceTests {
     }
 
     @Test
+    // successfully log out a user
     void logoutUser() {
-        // successfully log out a user
+        // create user
+        UserData user = new UserData("bob", "password", "e@mail.com");
+        userDB.createUser(user);
+
+        // log in the user
+        var userService = new UserService();
+        var loginResult = userService.login(new LoginRequest("bob", "password"));
+
+        // use the AuthToken to log them out
+        var logoutRequest = new LogoutRequest(loginResult.authToken());
+        userService.logout(logoutRequest);
+
+        // assert that the userDB is empty
+        Assertions.assertEquals(new HashMap<>(), authDB.getMap());
     }
 
+    @Test
+    // try to log out a user with no authToken
     void badLogoutUser() {
-        // try to log out a user with no authToken
+        // create user
+        UserData user = new UserData("bob", "password", "e@mail.com");
+        userDB.createUser(user);
+
+        // log in the user
+        var userService = new UserService();
+        userService.login(new LoginRequest("bob", "password"));
+
+        // use a bad auth token to log them out
+        var logoutRequest = new LogoutRequest("badAuthToken");
+        Assertions.assertThrows(InvalidAuthTokenException.class, () -> userService.logout(logoutRequest));
     }
 
     @Test
