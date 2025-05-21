@@ -8,6 +8,7 @@ import model.UserData;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import server.exceptions.AlreadyTakenException;
 import service.request.RegisterRequest;
 import service.result.RegisterResult;
 
@@ -35,6 +36,7 @@ class UserServiceTests {
         var expected = new HashMap<String, UserData>();
         expected.put("bob", user);
 
+        // use the service to register
         var userService = new UserService();
         var registerResult = userService.register(new RegisterRequest("bob", "password", "e@mail.com"));
 
@@ -43,16 +45,21 @@ class UserServiceTests {
 
         // check and see if the expected AuthData matches the RegisterResult
         var expectedAuthData = authDB.getMap().values().toArray(new AuthData[0]);
-
         Assertions.assertEquals(1, expectedAuthData.length);
         Assertions.assertEquals(expectedAuthData[0].authToken(), registerResult.authToken());
         Assertions.assertEquals(expectedAuthData[0].username(), registerResult.username());
     }
 
+    @Test
+    // try to register an existing user
     void registerExistingUser() {
-        // try to register an existing user
+        // make a new registerRequest and register user twice
+        var registerRequest = new RegisterRequest("bob", "password", "e@mail.com");
+        var userService = new UserService();
+        userService.register(registerRequest);
 
-        // expect AlreadyTakenException
+        // check and see if register throws an exception
+        Assertions.assertThrows(AlreadyTakenException.class, () -> userService.register(registerRequest));
     }
 
     @Test
