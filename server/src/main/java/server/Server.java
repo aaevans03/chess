@@ -1,6 +1,9 @@
 package server;
 
+import com.google.gson.Gson;
 import spark.*;
+
+import java.util.Map;
 
 public class Server {
 
@@ -18,6 +21,11 @@ public class Server {
         // CLEAR
         Spark.delete("/db", ClearHandler::handleClear);
 
+        // HANDLE EXCEPTIONS
+        Spark.exception(AlreadyTakenException.class, AlreadyTakenException::errorHandler);
+
+        Spark.exception(Exception.class, this::errorHandler);
+
         Spark.awaitInitialization();
         return Spark.port();
     }
@@ -25,5 +33,13 @@ public class Server {
     public void stop() {
         Spark.stop();
         Spark.awaitStop();
+    }
+
+    private Object errorHandler (Exception e, Request req, Response res) {
+        var body = new Gson().toJson(Map.of("message", String.format("%s", e.getMessage()), "success", false));
+        res.type("application/json");
+        res.status(500);
+        res.body(body);
+        return body;
     }
 }

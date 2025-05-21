@@ -3,6 +3,7 @@ package service;
 import dataaccess.MemoryAuthDAO;
 import dataaccess.MemoryUserDAO;
 import model.UserData;
+import server.AlreadyTakenException;
 import service.request.LoginRequest;
 import service.request.LogoutRequest;
 import service.request.RegisterRequest;
@@ -23,7 +24,7 @@ public class UserService {
         var email = registerRequest.email();
 
         if (userDB.getUser(username) != null) {
-            // TODO: add AlreadyTakenException
+            throw new AlreadyTakenException();
         }
 
         userDB.createUser(new UserData(username, password, email));
