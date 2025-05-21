@@ -2,10 +2,23 @@ package server;
 
 import service.GameService;
 import service.request.CreateRequest;
+import service.request.ListRequest;
 import spark.Request;
 import spark.Response;
 
 public class GameHandler {
+    public static Object handleList(Request request, Response response) {
+        // get header
+        var input = request.headers("authorization");
+
+        // send new ListRequest object to GameService and try logging out
+        var result = new GameService().list(new ListRequest(input));
+
+        // encode result and return
+        var objectEncoderDecoder = new ObjectEncoderDecoder();
+        return objectEncoderDecoder.encode(result);
+    }
+
     public static Object handleCreate(Request request, Response response) {
         // decode object, make new CreateRequest
         var objectEncoderDecoder = new ObjectEncoderDecoder();

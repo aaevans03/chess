@@ -18,7 +18,7 @@ public class Server {
         Spark.delete("/session", UserHandler::handleLogout);
 
         // GAME
-        // GET /game (list of games)
+        Spark.get("/game", GameHandler::handleList);
         Spark.post("/game", GameHandler::handleCreate);
         // PUT /game (join a game)
 

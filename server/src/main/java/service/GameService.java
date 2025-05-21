@@ -6,12 +6,27 @@ import dataaccess.MemoryUserDAO;
 import server.exceptions.InvalidAuthTokenException;
 import server.exceptions.InvalidInputException;
 import service.request.CreateRequest;
+import service.request.ListRequest;
 import service.result.CreateResult;
+import service.result.ListResult;
 
 public class GameService {
     MemoryUserDAO userDB = new MemoryUserDAO();
     MemoryAuthDAO authDB = new MemoryAuthDAO();
     MemoryGameDAO gameDB = new MemoryGameDAO();
+
+    public ListResult list(ListRequest listRequest) {
+        var authToken = listRequest.authToken();
+
+        var authData = authDB.getAuthData(authToken);
+
+        // 401, unauthorized
+        if (authData == null) {
+            throw new InvalidAuthTokenException();
+        }
+
+        return new ListResult(gameDB.listGames());
+    }
 
     public CreateResult create(CreateRequest createRequest) {
 
