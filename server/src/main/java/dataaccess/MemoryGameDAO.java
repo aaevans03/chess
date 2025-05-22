@@ -53,4 +53,9 @@ public class MemoryGameDAO implements GameDAO {
             memoryGameData.put(gameID, newGame);
         }
     }
+
+    // reset gameIterator that assigns game ID numbers (for debugging)
+    public void resetIterator() {
+        gameIterator = 1;
+    }
 }

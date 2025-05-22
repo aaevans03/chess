@@ -28,6 +28,9 @@ class UserServiceTests {
         userDB = new MemoryUserDAO();
         authDB = new MemoryAuthDAO();
         gameDB = new MemoryGameDAO();
+        userDB.clearUserData();
+        authDB.clearAuthData();
+        gameDB.clearGameData();
     }
 
     @Test
