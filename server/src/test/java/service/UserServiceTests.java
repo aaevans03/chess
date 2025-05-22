@@ -132,9 +132,4 @@ class UserServiceTests {
         var logoutRequest = new LogoutRequest("badAuthToken");
         Assertions.assertThrows(InvalidAuthTokenException.class, () -> userService.logout(logoutRequest));
     }
-
-    @Test
-    void nullTests() {
-        // try all service functions with null inputs, expect different exceptions
-    }
 }

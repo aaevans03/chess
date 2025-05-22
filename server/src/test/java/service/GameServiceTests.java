@@ -9,8 +9,10 @@ import model.GameData;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import server.exceptions.AlreadyTakenException;
 import server.exceptions.InvalidAuthTokenException;
 import service.request.CreateRequest;
+import service.request.JoinRequest;
 import service.request.ListRequest;
 
 import java.util.ArrayList;
@@ -31,11 +33,7 @@ class GameServiceTests {
         authDB.clearAuthData();
         gameDB.clearGameData();
         dummyGameList();
-        authToken = registerUser1();
-    }
-
-    String registerUser1() {
-        return authDB.createAuthData("bob");
+        authToken = authDB.createAuthData("bob");
     }
 
     void dummyGameList() {
@@ -48,7 +46,6 @@ class GameServiceTests {
         gameDB.updateGame(2, "player4", ChessGame.TeamColor.BLACK);
         gameDB.createGame("game3");
         gameDB.updateGame(3, "player5", ChessGame.TeamColor.WHITE);
-        gameDB.updateGame(3, "player6", ChessGame.TeamColor.BLACK);
     }
 
     @Test
@@ -56,7 +53,7 @@ class GameServiceTests {
         // create a list of games, make a list manually
         var game1 = new GameData(1, "player1", "player2", "game1", new ChessGame());
         var game2 = new GameData(2, "player3", "player4", "game2", new ChessGame());
-        var game3 = new GameData(3, "player5", "player6", "game3", new ChessGame());
+        var game3 = new GameData(3, "player5", null, "game3", new ChessGame());
 
         var expectedList = new ArrayList<GameData>();
         expectedList.add(game1);
@@ -94,8 +91,6 @@ class GameServiceTests {
 
     @Test
     void createGameFail() {
-        var authToken = registerUser1();
-
         // invalid authToken
         var gameService = new GameService();
         var createRequest = new CreateRequest("badAuthToken", authToken);
@@ -104,5 +99,39 @@ class GameServiceTests {
 
     @Test
     void join() {
+        // try joining game 3
+        var game3 = new GameData(3, "player5", "bob", "game3", new ChessGame());
+
+        var gameService = new GameService();
+        try {
+            gameService.join(new JoinRequest(authToken, ChessGame.TeamColor.BLACK, 3));
+
+            Assertions.assertEquals(game3, gameDB.getGame(3));
+
+        } catch (DataAccessException e) {
+            Assertions.fail("DataAccessException occurred");
+        }
+    }
+
+    @Test
+    void joinFail() {
+        // try joining with different issues every time
+        var gameService = new GameService();
+
+        // no authToken
+        var joinRequest1 = new JoinRequest("badAuthToken", ChessGame.TeamColor.BLACK, 3);
+        Assertions.assertThrows(InvalidAuthTokenException.class, () -> gameService.join(joinRequest1));
+
+        // missing field
+        var joinRequest2 = new JoinRequest(authToken, null, 3);
+        Assertions.assertThrows(DataAccessException.class, () -> gameService.join(joinRequest2));
+
+        // invalid game ID
+        var joinRequest3 = new JoinRequest(authToken, ChessGame.TeamColor.BLACK, 123);
+        Assertions.assertThrows(DataAccessException.class, () -> gameService.join(joinRequest3));
+
+        // color already taken
+        var joinRequest4 = new JoinRequest(authToken, ChessGame.TeamColor.WHITE, 3);
+        Assertions.assertThrows(AlreadyTakenException.class, () -> gameService.join(joinRequest4));
     }
 }
