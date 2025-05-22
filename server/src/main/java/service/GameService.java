@@ -4,7 +4,6 @@ import chess.ChessGame;
 import dataaccess.DataAccessException;
 import dataaccess.MemoryAuthDAO;
 import dataaccess.MemoryGameDAO;
-import dataaccess.MemoryUserDAO;
 import server.exceptions.AlreadyTakenException;
 import server.exceptions.InvalidAuthTokenException;
 import service.request.CreateRequest;
@@ -15,7 +14,6 @@ import service.result.JoinResult;
 import service.result.ListResult;
 
 public class GameService {
-    MemoryUserDAO userDB = new MemoryUserDAO();
     MemoryAuthDAO authDB = new MemoryAuthDAO();
     MemoryGameDAO gameDB = new MemoryGameDAO();
 
@@ -101,20 +99,5 @@ public class GameService {
             }
         }
         return new JoinResult();
-    }
-
-    private void debug() {
-        for (var yes : userDB.getMap().values()) {
-            System.out.println("\nusername: " + yes.username());
-            System.out.println("password: " + yes.password());
-            System.out.println("email: " + yes.email());
-        }
-
-        for (var yes : authDB.getMap().values()) {
-            System.out.println("authToken: " + yes.authToken());
-            System.out.println("username: " + yes.username());
-        }
-
-        System.out.print(gameDB.listGames());
     }
 }
