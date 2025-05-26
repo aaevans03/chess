@@ -40,3 +40,52 @@ While I scored 100% on the submission, my code quality is only at a 15%. Here ar
 Completed Phase 2 of the Chess Project, with the following server design sequence diagram:
 
 ![](chess_server_design.svg)
+
+## 2025.05.26
+
+Starting on Phase 4 of the project. Here I am designing the database schema with SQL.
+
+### userData
+
+- The primary key should be username. Usernames are unique
+
+```sql
+CREATE TABLE IF NOT EXISTS userData (
+    username VARCHAR(255) NOT NULL,
+    password VARCHAR(255) NOT NULL,
+    email VARCHAR(255) NOT NULL,
+    PRIMARY KEY (username)
+);
+```
+
+### authData
+
+- Indexed by authToken
+- username is a foreign key from userData
+
+```sql
+CREATE TABLE IF NOT EXISTS authData (
+    authToken VARCHAR(255) NOT NULL,
+    username VARCHAR(255) NOT NULL,
+    INDEX (authToken),
+    FOREIGN KEY (username) REFERENCES userData(username) ON UPDATE CASCADE ON DELETE RESTRICT
+);
+```
+
+### gameData
+
+- The game ID should increment automatically. It is a primary key
+- whiteUsername and blackUsername can be null. They are foreign keys from userData, set null when deleted
+
+```sql
+CREATE TABLE IF NOT EXISTS gameData (
+    gameID INT NOT NULL AUTO_INCREMENT,
+    whiteUsername VARCHAR(255),
+    blackUsername VARCHAR(255),
+    gameName VARCHAR(255) NOT NULL,
+    game TEXT NOT NULL DEFAULT "insert chess game as JSON here",
+    PRIMARY KEY (gameID),
+    FOREIGN KEY (whiteUsername) REFERENCES userData(username) ON UPDATE CASCADE ON DELETE SET NULL,
+    FOREIGN KEY (blackUsername) REFERENCES userData(username) ON UPDATE CASCADE ON DELETE SET NULL
+);
+```
