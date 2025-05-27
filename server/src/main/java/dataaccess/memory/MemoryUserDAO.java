@@ -1,12 +1,13 @@
-package dataaccess;
+package dataaccess.memory;
 
+import dataaccess.UserDAO;
 import model.UserData;
 
 import java.util.HashMap;
 
 public class MemoryUserDAO implements UserDAO {
     // A map of user data: find UserData given a username
-    static HashMap<String, UserData> memoryUserData = new HashMap<>();
+    HashMap<String, UserData> memoryUserData = new HashMap<>();
 
     public MemoryUserDAO() {
         // add values for testing

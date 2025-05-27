@@ -2,9 +2,9 @@ package service;
 
 import chess.ChessGame;
 import dataaccess.DataAccessException;
-import dataaccess.MemoryAuthDAO;
-import dataaccess.MemoryGameDAO;
-import dataaccess.MemoryUserDAO;
+import dataaccess.memory.MemoryAuthDAO;
+import dataaccess.memory.MemoryGameDAO;
+import dataaccess.memory.MemoryUserDAO;
 import model.GameData;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -18,6 +18,8 @@ import service.request.ListRequest;
 import java.util.ArrayList;
 
 class GameServiceTests {
+
+    GameService gameService;
 
     MemoryUserDAO userDB;
     MemoryAuthDAO authDB;
@@ -34,10 +36,10 @@ class GameServiceTests {
         gameDB.clearGameData();
         dummyGameList();
         authToken = authDB.createAuthData("bob");
+        gameService = new GameService(authDB, gameDB);
     }
 
     void dummyGameList() {
-        gameDB.resetIterator();
         gameDB.createGame("game1");
         gameDB.updateGame(1, "player1", ChessGame.TeamColor.WHITE);
         gameDB.updateGame(1, "player2", ChessGame.TeamColor.BLACK);
@@ -61,7 +63,6 @@ class GameServiceTests {
         expectedList.add(game3);
 
         // register a user to get an authToken, get list of games and compare
-        var gameService = new GameService();
         var gameList = gameService.list(new ListRequest(authToken)).games();
 
         Assertions.assertEquals(expectedList, gameList);
@@ -70,7 +71,6 @@ class GameServiceTests {
     @Test
     void listAllGamesInvalidAuthToken() {
         // try to get list of games with a bad authToken
-        var gameService = new GameService();
         var listRequest = new ListRequest("badAuthToken");
         Assertions.assertThrows(InvalidAuthTokenException.class, () -> gameService.list(listRequest));
     }
@@ -78,7 +78,6 @@ class GameServiceTests {
     @Test
     void createGame() {
         // successfully create a new game
-        var gameService = new GameService();
         try {
             var createResult = gameService.create(new CreateRequest(authToken, "New Game"));
 
@@ -92,7 +91,6 @@ class GameServiceTests {
     @Test
     void createGameFail() {
         // invalid authToken
-        var gameService = new GameService();
         var createRequest = new CreateRequest("badAuthToken", authToken);
         Assertions.assertThrows(InvalidAuthTokenException.class, () -> gameService.create(createRequest));
     }
@@ -102,7 +100,6 @@ class GameServiceTests {
         // try joining game 3
         var game3 = new GameData(3, "player5", "bob", "game3", new ChessGame());
 
-        var gameService = new GameService();
         try {
             gameService.join(new JoinRequest(authToken, ChessGame.TeamColor.BLACK, 3));
 
@@ -116,8 +113,6 @@ class GameServiceTests {
     @Test
     void joinFail() {
         // try joining with different issues every time
-        var gameService = new GameService();
-
         // no authToken
         var joinRequest1 = new JoinRequest("badAuthToken", ChessGame.TeamColor.BLACK, 3);
         Assertions.assertThrows(InvalidAuthTokenException.class, () -> gameService.join(joinRequest1));

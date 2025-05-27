@@ -1,8 +1,8 @@
 package service;
 
-import dataaccess.MemoryAuthDAO;
-import dataaccess.MemoryGameDAO;
-import dataaccess.MemoryUserDAO;
+import dataaccess.memory.MemoryAuthDAO;
+import dataaccess.memory.MemoryGameDAO;
+import dataaccess.memory.MemoryUserDAO;
 import model.AuthData;
 import model.UserData;
 import org.junit.jupiter.api.Assertions;
@@ -19,6 +19,8 @@ import java.util.HashMap;
 
 class UserServiceTests {
 
+    UserService userService;
+
     MemoryUserDAO userDB;
     MemoryAuthDAO authDB;
     MemoryGameDAO gameDB;
@@ -31,10 +33,11 @@ class UserServiceTests {
         userDB.clearUserData();
         authDB.clearAuthData();
         gameDB.clearGameData();
+        userService = new UserService(userDB, authDB);
     }
 
     @Test
-    // successfully register a new user
+        // successfully register a new user
     void registerNewUser() {
         // expected output
         UserData user = new UserData("bob", "password", "e@mail.com");
@@ -42,7 +45,6 @@ class UserServiceTests {
         expected.put("bob", user);
 
         // use the service to register
-        var userService = new UserService();
         var registerResult = userService.register(new RegisterRequest("bob", "password", "e@mail.com"));
 
         // check and see if the expected DB matches
@@ -56,11 +58,10 @@ class UserServiceTests {
     }
 
     @Test
-    // try to register an existing user
+        // try to register an existing user
     void registerExistingUser() {
         // make a new registerRequest and register user twice
         var registerRequest = new RegisterRequest("bob", "password", "e@mail.com");
-        var userService = new UserService();
         userService.register(registerRequest);
 
         // check and see if register throws an exception
@@ -68,14 +69,13 @@ class UserServiceTests {
     }
 
     @Test
-    // successfully login a user
+        // successfully login a user
     void loginUser() {
         // expected output
         UserData user = new UserData("bob", "password", "e@mail.com");
         userDB.createUser(user);
 
         // use the service to login
-        var userService = new UserService();
         var loginResult = userService.login(new LoginRequest("bob", "password"));
 
         // check and see if the expected AuthData matches the LoginResult
@@ -86,27 +86,25 @@ class UserServiceTests {
     }
 
     @Test
-    // try to log in a user with a bad password
+        // try to log in a user with a bad password
     void loginUserBadPassword() {
         // create user
         UserData user = new UserData("bob", "password", "e@mail.com");
         userDB.createUser(user);
 
         // use the service to login
-        var userService = new UserService();
         var loginRequest = new LoginRequest("bob", "wrongPassword");
         Assertions.assertThrows(InvalidCredentialsException.class, () -> userService.login(loginRequest));
     }
 
     @Test
-    // successfully log out a user
+        // successfully log out a user
     void logoutUser() {
         // create user
         UserData user = new UserData("bob", "password", "e@mail.com");
         userDB.createUser(user);
 
         // log in the user
-        var userService = new UserService();
         var loginResult = userService.login(new LoginRequest("bob", "password"));
 
         // use the AuthToken to log them out
@@ -118,14 +116,13 @@ class UserServiceTests {
     }
 
     @Test
-    // try to log out a user with no authToken
+        // try to log out a user with no authToken
     void badLogoutUser() {
         // create user
         UserData user = new UserData("bob", "password", "e@mail.com");
         userDB.createUser(user);
 
         // log in the user
-        var userService = new UserService();
         userService.login(new LoginRequest("bob", "password"));
 
         // use a bad auth token to log them out

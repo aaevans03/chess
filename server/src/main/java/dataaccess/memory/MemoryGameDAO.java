@@ -1,6 +1,7 @@
-package dataaccess;
+package dataaccess.memory;
 
 import chess.ChessGame;
+import dataaccess.GameDAO;
 import model.GameData;
 
 import java.util.ArrayList;
@@ -8,8 +9,8 @@ import java.util.TreeMap;
 
 public class MemoryGameDAO implements GameDAO {
     // A map of game data: find GameData given a game ID
-    static TreeMap<Integer, GameData> memoryGameData = new TreeMap<>();
-    static int gameIterator = 1;
+    TreeMap<Integer, GameData> memoryGameData = new TreeMap<>();
+    int gameIterator = 1;
 
     public MemoryGameDAO() {
         // add values for testing
@@ -47,15 +48,9 @@ public class MemoryGameDAO implements GameDAO {
         if (playerColor == ChessGame.TeamColor.WHITE) {
             GameData newGame = new GameData(gameID, username, currentGame.blackUsername(), currentGame.gameName(), currentGame.game());
             memoryGameData.put(gameID, newGame);
-        }
-        else if (playerColor == ChessGame.TeamColor.BLACK) {
+        } else if (playerColor == ChessGame.TeamColor.BLACK) {
             GameData newGame = new GameData(gameID, currentGame.whiteUsername(), username, currentGame.gameName(), currentGame.game());
             memoryGameData.put(gameID, newGame);
         }
-    }
-
-    // reset gameIterator that assigns game ID numbers (for debugging)
-    public void resetIterator() {
-        gameIterator = 1;
     }
 }

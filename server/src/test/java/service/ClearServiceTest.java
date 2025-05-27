@@ -1,8 +1,8 @@
 package service;
 
-import dataaccess.MemoryAuthDAO;
-import dataaccess.MemoryGameDAO;
-import dataaccess.MemoryUserDAO;
+import dataaccess.memory.MemoryAuthDAO;
+import dataaccess.memory.MemoryGameDAO;
+import dataaccess.memory.MemoryUserDAO;
 import model.UserData;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -28,7 +28,8 @@ public class ClearServiceTest {
         gameDB.createGame("The Second Game");
         gameDB.createGame("3rd Game");
 
-        ClearService.clear();
+        var clearService = new ClearService(userDB, authDB, gameDB);
+        clearService.clear();
 
         // Expected maps/arrays
         var expectedUserDB = new HashMap<>();

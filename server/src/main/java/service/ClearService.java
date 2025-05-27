@@ -1,14 +1,26 @@
 package service;
 
-import dataaccess.*;
+import dataaccess.AuthDAO;
+import dataaccess.GameDAO;
+import dataaccess.UserDAO;
 import service.result.ClearResult;
 
 public class ClearService {
 
-    public static ClearResult clear() {
-        new MemoryGameDAO().clearGameData();
-        new MemoryAuthDAO().clearAuthData();
-        new MemoryUserDAO().clearUserData();
+    UserDAO userDB;
+    AuthDAO authDB;
+    GameDAO gameDB;
+
+    public ClearService(UserDAO userDB, AuthDAO authDB, GameDAO gameDB) {
+        this.userDB = userDB;
+        this.authDB = authDB;
+        this.gameDB = gameDB;
+    }
+
+    public ClearResult clear() {
+        userDB.clearUserData();
+        authDB.clearAuthData();
+        gameDB.clearGameData();
         return new ClearResult();
     }
 }

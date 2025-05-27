@@ -1,10 +1,48 @@
 package server;
 
+import dataaccess.AuthDAO;
 import dataaccess.DataAccessException;
+import dataaccess.GameDAO;
+import dataaccess.UserDAO;
+import dataaccess.memory.MemoryAuthDAO;
+import dataaccess.memory.MemoryGameDAO;
+import dataaccess.memory.MemoryUserDAO;
+import dataaccess.mysql.MySqlAuthDAO;
+import dataaccess.mysql.MySqlGameDAO;
+import dataaccess.mysql.MySqlUserDAO;
 import server.exceptions.*;
-import spark.*;
+import spark.Spark;
 
 public class Server {
+    UserHandler userHandler;
+    GameHandler gameHandler;
+    ClearHandler clearHandler;
+
+    /**
+     * Constructor: determine if we are storing application data in memory or in MySQL
+     */
+    public Server() {
+        UserDAO userDB;
+        AuthDAO authDB;
+        GameDAO gameDB;
+
+        // Change this line to determine whether to use MySQL or not
+        var usesMySQL = false;
+
+        if (usesMySQL) {
+            userDB = new MySqlUserDAO();
+            authDB = new MySqlAuthDAO();
+            gameDB = new MySqlGameDAO();
+        } else {
+            userDB = new MemoryUserDAO();
+            authDB = new MemoryAuthDAO();
+            gameDB = new MemoryGameDAO();
+        }
+
+        userHandler = new UserHandler(userDB, authDB);
+        gameHandler = new GameHandler(authDB, gameDB);
+        clearHandler = new ClearHandler(userDB, authDB, gameDB);
+    }
 
     public int run(int desiredPort) {
         Spark.port(desiredPort);
@@ -13,17 +51,17 @@ public class Server {
 
         // Register your endpoints and handle exceptions here.
         // USER
-        Spark.post("/user", UserHandler::handleRegister);
-        Spark.post("/session", UserHandler::handleLogin);
-        Spark.delete("/session", UserHandler::handleLogout);
+        Spark.post("/user", userHandler::handleRegister);
+        Spark.post("/session", userHandler::handleLogin);
+        Spark.delete("/session", userHandler::handleLogout);
 
         // GAME
-        Spark.get("/game", GameHandler::handleList);
-        Spark.post("/game", GameHandler::handleCreate);
-        Spark.put("/game", GameHandler::handleJoin);
+        Spark.get("/game", gameHandler::handleList);
+        Spark.post("/game", gameHandler::handleCreate);
+        Spark.put("/game", gameHandler::handleJoin);
 
         // CLEAR
-        Spark.delete("/db", ClearHandler::handleClear);
+        Spark.delete("/db", clearHandler::handleClear);
 
         // HANDLE EXCEPTIONS
         Spark.exception(InvalidInputException.class, InvalidInputException::errorHandler);

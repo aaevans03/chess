@@ -1,15 +1,22 @@
 package server;
 
+import dataaccess.AuthDAO;
+import dataaccess.GameDAO;
+import dataaccess.UserDAO;
 import service.ClearService;
 import service.result.ClearResult;
 import spark.Request;
 import spark.Response;
 
 public class ClearHandler {
+    ClearService clearService;
 
-    public static Object handleClear(Request request, Response response) {
+    ClearHandler(UserDAO userDB, AuthDAO authDB, GameDAO gameDB) {
+        clearService = new ClearService(userDB, authDB, gameDB);
+    }
 
-        ClearResult result = ClearService.clear();
+    public Object handleClear(Request request, Response response) {
+        ClearResult result = clearService.clear();
 
         var objectEncoderDecoder = new ObjectEncoderDecoder();
         return objectEncoderDecoder.encode(result);

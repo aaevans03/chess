@@ -1,9 +1,9 @@
 package service;
 
 import chess.ChessGame;
+import dataaccess.AuthDAO;
 import dataaccess.DataAccessException;
-import dataaccess.MemoryAuthDAO;
-import dataaccess.MemoryGameDAO;
+import dataaccess.GameDAO;
 import server.exceptions.AlreadyTakenException;
 import server.exceptions.InvalidAuthTokenException;
 import service.request.CreateRequest;
@@ -14,8 +14,13 @@ import service.result.JoinResult;
 import service.result.ListResult;
 
 public class GameService {
-    MemoryAuthDAO authDB = new MemoryAuthDAO();
-    MemoryGameDAO gameDB = new MemoryGameDAO();
+    AuthDAO authDB;
+    GameDAO gameDB;
+    
+    public GameService(AuthDAO authDB, GameDAO gameDB) {
+        this.authDB = authDB;
+        this.gameDB = gameDB;
+    }
 
     public ListResult list(ListRequest listRequest) {
         var authToken = listRequest.authToken();

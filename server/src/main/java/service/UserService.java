@@ -1,9 +1,12 @@
 package service;
 
-import dataaccess.MemoryAuthDAO;
-import dataaccess.MemoryUserDAO;
+import dataaccess.AuthDAO;
+import dataaccess.UserDAO;
 import model.UserData;
-import server.exceptions.*;
+import server.exceptions.AlreadyTakenException;
+import server.exceptions.InvalidAuthTokenException;
+import server.exceptions.InvalidCredentialsException;
+import server.exceptions.InvalidInputException;
 import service.request.LoginRequest;
 import service.request.LogoutRequest;
 import service.request.RegisterRequest;
@@ -14,8 +17,13 @@ import service.result.RegisterResult;
 import java.util.Objects;
 
 public class UserService {
-    MemoryUserDAO userDB = new MemoryUserDAO();
-    MemoryAuthDAO authDB = new MemoryAuthDAO();
+    UserDAO userDB;
+    AuthDAO authDB;
+
+    public UserService(UserDAO userDB, AuthDAO authDB) {
+        this.userDB = userDB;
+        this.authDB = authDB;
+    }
 
     public RegisterResult register(RegisterRequest registerRequest) throws AlreadyTakenException {
 
