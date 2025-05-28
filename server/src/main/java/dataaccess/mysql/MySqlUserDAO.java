@@ -10,13 +10,24 @@ import java.sql.SQLException;
 
 public class MySqlUserDAO implements UserDAO {
 
+    private final String[] createStatements = {
+            """
+            CREATE TABLE IF NOT EXISTS userData (
+            username VARCHAR(255) NOT NULL,
+            password VARCHAR(255) NOT NULL,
+            email VARCHAR(255) NOT NULL,
+            PRIMARY KEY (username)
+            );
+            """
+    };
+
     /**
      * Constructor that creates a table in the MySQL database.
      *
      * @throws DataAccessException Throws an exception when there's an error performing database operations.
      */
     public MySqlUserDAO() throws DataAccessException {
-        configureDatabase();
+        DatabaseManager.configureDatabase(createStatements);
     }
 
     /**
@@ -47,11 +58,11 @@ public class MySqlUserDAO implements UserDAO {
         try (var conn = DatabaseManager.getConnection()) {
 
             // prepare the statement
-            try (var preparedStatement = conn.prepareStatement("DROP DATABASE CHESS;")) {
+            try (var preparedStatement = conn.prepareStatement("DROP TABLE userData;")) {
                 preparedStatement.executeUpdate();
             }
-            // reset the DB
-            configureDatabase();
+            // re-configure the DB
+            DatabaseManager.configureDatabase(createStatements);
         } catch (SQLException | DataAccessException ex) {
             throw new DataAccessException(String.format("Unable to configure database: %s", ex.getMessage()));
         }
@@ -96,31 +107,6 @@ public class MySqlUserDAO implements UserDAO {
         }
 
         return userData;
-    }
-
-    private final String[] createStatements = {
-            """
-            CREATE TABLE IF NOT EXISTS userData (
-            username VARCHAR(255) NOT NULL,
-            password VARCHAR(255) NOT NULL,
-            email VARCHAR(255) NOT NULL,
-            PRIMARY KEY (username)
-            );
-            """
-    };
-
-    private void configureDatabase() throws DataAccessException {
-        DatabaseManager.createDatabase();
-
-        try (var conn = DatabaseManager.getConnection()) {
-            for (var statement : createStatements) {
-                try (var preparedStatement = conn.prepareStatement(statement)) {
-                    preparedStatement.executeUpdate();
-                }
-            }
-        } catch (SQLException ex) {
-            throw new DataAccessException(String.format("Unable to configure database: %s", ex.getMessage()));
-        }
     }
 
     private String hashPassword(String clearTextPassword) {
