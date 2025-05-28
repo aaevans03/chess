@@ -7,6 +7,7 @@ import dataaccess.GameDAO;
 import model.GameData;
 import server.ObjectEncoderDecoder;
 
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 
@@ -53,6 +54,10 @@ public class MySqlGameDAO implements GameDAO {
 
             System.out.println(gameDB.listGames());
 
+            System.out.println(gameDB.getGame(1));
+            System.out.println(gameDB.getGame(2));
+            System.out.println(gameDB.getGame(3));
+
         } catch (Throwable e) {
             System.out.println("Exception: " + e.getMessage());
         }
@@ -78,17 +83,7 @@ public class MySqlGameDAO implements GameDAO {
             try (var preparedStatement = conn.prepareStatement("SELECT * from gameData;")) {
                 try (var resultSet = preparedStatement.executeQuery()) {
                     while (resultSet.next()) {
-                        var returnedGameID = resultSet.getInt("gameID");
-                        var returnedWhiteUsername = resultSet.getString("whiteUsername");
-                        var returnedBlackUsername = resultSet.getString("blackUsername");
-                        var returnedGameName = resultSet.getString("gameName");
-                        var returnedGame = resultSet.getString("game");
-
-                        var convertedGame = new ObjectEncoderDecoder().decode(returnedGame, ChessGame.class);
-
-                        var returnedGameData = new GameData(returnedGameID, returnedWhiteUsername,
-                                returnedBlackUsername, returnedGameName, (ChessGame) convertedGame);
-                        gameList.add(returnedGameData);
+                        gameList.add(parseGame(resultSet));
                     }
                 }
             }
@@ -104,7 +99,8 @@ public class MySqlGameDAO implements GameDAO {
         var encodedGame = new ObjectEncoderDecoder().encode(newGame);
 
         try (var conn = DatabaseManager.getConnection()) {
-            try (var preparedStatement = conn.prepareStatement("INSERT INTO gameData (whiteUsername, blackUsername, gameName, game) VALUES (?, ?, ?, ?)", RETURN_GENERATED_KEYS)) {
+            try (var preparedStatement = conn.prepareStatement("INSERT INTO gameData (whiteUsername," +
+                    "blackUsername, gameName, game) VALUES (?, ?, ?, ?)", RETURN_GENERATED_KEYS)) {
                 preparedStatement.setString(1, null);
                 preparedStatement.setString(2, null);
                 preparedStatement.setString(3, gameName);
@@ -125,12 +121,37 @@ public class MySqlGameDAO implements GameDAO {
     }
 
     @Override
-    public GameData getGame(int gameID) {
+    public GameData getGame(int gameID) throws DataAccessException {
+        try (var conn = DatabaseManager.getConnection()) {
+            try (var preparedStatement = conn.prepareStatement("SELECT * from gameData WHERE gameID=?;")) {
+                preparedStatement.setInt(1, gameID);
+                try (var resultSet = preparedStatement.executeQuery()) {
+                    if (resultSet.next()) {
+                        return parseGame(resultSet);
+                    }
+                }
+            }
+        } catch (SQLException ex) {
+            throw new DataAccessException(String.format("Unable to configure database: %s", ex.getMessage()));
+        }
         return null;
     }
 
     @Override
     public void updateGame(int gameID, String username, ChessGame.TeamColor playerColor, ChessGame game) {
 
+    }
+
+    private GameData parseGame(ResultSet resultSet) throws SQLException {
+        var returnedGameID = resultSet.getInt("gameID");
+        var returnedWhiteUsername = resultSet.getString("whiteUsername");
+        var returnedBlackUsername = resultSet.getString("blackUsername");
+        var returnedGameName = resultSet.getString("gameName");
+        var returnedGame = resultSet.getString("game");
+
+        var convertedGame = new ObjectEncoderDecoder().decode(returnedGame, ChessGame.class);
+
+        return new GameData(returnedGameID, returnedWhiteUsername,
+                returnedBlackUsername, returnedGameName, (ChessGame) convertedGame);
     }
 }
