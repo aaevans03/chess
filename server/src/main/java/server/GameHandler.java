@@ -18,7 +18,7 @@ public class GameHandler {
         gameService = new GameService(authDB, gameDB);
     }
 
-    public Object handleList(Request request, Response response) throws DataAccessException {
+    public Object handleList(Request request, Response ignoredResponse) throws DataAccessException {
         // get header
         var input = request.headers("authorization");
 
@@ -30,7 +30,7 @@ public class GameHandler {
         return objectEncoderDecoder.encode(result);
     }
 
-    public Object handleCreate(Request request, Response response) throws DataAccessException {
+    public Object handleCreate(Request request, Response ignoredResponse) throws DataAccessException {
         // decode object, make new CreateRequest
         var objectEncoderDecoder = new ObjectEncoderDecoder();
 
@@ -44,7 +44,7 @@ public class GameHandler {
         return objectEncoderDecoder.encode(result);
     }
 
-    public Object handleJoin(Request request, Response response) throws DataAccessException {
+    public Object handleJoin(Request request, Response ignoredResponse) throws DataAccessException {
         // decode object, make new JoinRequest
         var objectEncoderDecoder = new ObjectEncoderDecoder();
 

@@ -16,7 +16,7 @@ public class ClearHandler {
         clearService = new ClearService(userDB, authDB, gameDB);
     }
 
-    public Object handleClear(Request request, Response response) throws DataAccessException {
+    public Object handleClear(Request ignoredRequest, Response ignoredResponse) throws DataAccessException {
         ClearResult result = clearService.clear();
 
         var objectEncoderDecoder = new ObjectEncoderDecoder();

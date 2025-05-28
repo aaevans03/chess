@@ -18,7 +18,7 @@ public class UserHandler {
         userService = new UserService(userDB, authDB);
     }
 
-    public Object handleRegister(Request request, Response response) throws DataAccessException {
+    public Object handleRegister(Request request, Response ignoredResponse) throws DataAccessException {
         // decode object, make new RegisterRequest
         var objectEncoderDecoder = new ObjectEncoderDecoder();
         RegisterRequest input = (RegisterRequest) objectEncoderDecoder.decode(request.body(), RegisterRequest.class);
@@ -30,7 +30,7 @@ public class UserHandler {
         return objectEncoderDecoder.encode(result);
     }
 
-    public Object handleLogin(Request request, Response response) throws DataAccessException {
+    public Object handleLogin(Request request, Response ignoredResponse) throws DataAccessException {
         // decode object, make new LoginRequest
         var objectEncoderDecoder = new ObjectEncoderDecoder();
         LoginRequest input = (LoginRequest) objectEncoderDecoder.decode(request.body(), LoginRequest.class);
@@ -42,7 +42,7 @@ public class UserHandler {
         return objectEncoderDecoder.encode(result);
     }
 
-    public Object handleLogout(Request request, Response response) throws DataAccessException {
+    public Object handleLogout(Request request, Response ignoredResponse) throws DataAccessException {
         // get header
         var input = request.headers("authorization");
 
