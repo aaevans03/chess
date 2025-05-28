@@ -19,9 +19,9 @@ public class ClearService {
     }
 
     public ClearResult clear() throws DataAccessException {
-        userDB.clearUserData();
         authDB.clearAuthData();
         gameDB.clearGameData();
+        userDB.clearUserData();
         return new ClearResult();
     }
 }
