@@ -51,7 +51,7 @@ public class MySqlAuthDAO implements AuthDAO {
             try (var preparedStatement = conn.prepareStatement("TRUNCATE TABLE authData;")) {
                 preparedStatement.executeUpdate();
             }
-        } catch (SQLException | DataAccessException ex) {
+        } catch (SQLException ex) {
             throw new DataAccessException(String.format("Unable to configure database: %s", ex.getMessage()));
         }
     }
