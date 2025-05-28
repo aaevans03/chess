@@ -1,6 +1,7 @@
 package server;
 
 import dataaccess.AuthDAO;
+import dataaccess.DataAccessException;
 import dataaccess.GameDAO;
 import dataaccess.UserDAO;
 import service.ClearService;
@@ -15,7 +16,7 @@ public class ClearHandler {
         clearService = new ClearService(userDB, authDB, gameDB);
     }
 
-    public Object handleClear(Request request, Response response) {
+    public Object handleClear(Request request, Response response) throws DataAccessException {
         ClearResult result = clearService.clear();
 
         var objectEncoderDecoder = new ObjectEncoderDecoder();

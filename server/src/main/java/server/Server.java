@@ -27,12 +27,19 @@ public class Server {
         GameDAO gameDB;
 
         // Change this line to determine whether to use MySQL or not
-        var usesMySQL = false;
+        var usesMySQL = true;
 
         if (usesMySQL) {
-            userDB = new MySqlUserDAO();
-            authDB = new MySqlAuthDAO();
-            gameDB = new MySqlGameDAO();
+            try {
+                userDB = new MySqlUserDAO();
+                authDB = new MySqlAuthDAO();
+                gameDB = new MySqlGameDAO();
+            } catch (DataAccessException ex) {
+                userDB = null;
+                authDB = null;
+                gameDB = null;
+                System.out.println("Unable to initialize database with MySQL: " + ex.getMessage());
+            }
         } else {
             userDB = new MemoryUserDAO();
             authDB = new MemoryAuthDAO();
