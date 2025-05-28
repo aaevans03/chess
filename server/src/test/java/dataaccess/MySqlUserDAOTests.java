@@ -1,5 +1,7 @@
 package dataaccess;
 
+import dataaccess.mysql.MySqlAuthDAO;
+import dataaccess.mysql.MySqlGameDAO;
 import dataaccess.mysql.MySqlUserDAO;
 import model.UserData;
 import org.junit.jupiter.api.AfterAll;
@@ -16,6 +18,8 @@ class MySqlUserDAOTests {
 
     @BeforeEach
     void setUp() throws DataAccessException {
+        new MySqlAuthDAO().clearAuthData();
+        new MySqlGameDAO().clearGameData();
         userDB = new MySqlUserDAO();
         userDB.clearUserData();
     }
@@ -36,11 +40,11 @@ class MySqlUserDAOTests {
 
             userDB.clearUserData();
 
-            Assertions.assertThrows(DataAccessException.class, () -> userDB.getUser("user1"));
-            Assertions.assertThrows(DataAccessException.class, () -> userDB.getUser("user2"));
-            Assertions.assertThrows(DataAccessException.class, () -> userDB.getUser("user3"));
-            Assertions.assertThrows(DataAccessException.class, () -> userDB.getUser("user4"));
-            Assertions.assertThrows(DataAccessException.class, () -> userDB.getUser("user5"));
+            Assertions.assertNull(userDB.getUser("user1"));
+            Assertions.assertNull(userDB.getUser("user2"));
+            Assertions.assertNull(userDB.getUser("user3"));
+            Assertions.assertNull(userDB.getUser("user4"));
+            Assertions.assertNull(userDB.getUser("user5"));
 
             Assertions.assertEquals(0, countTableEntries());
 
@@ -107,8 +111,8 @@ class MySqlUserDAOTests {
     }
 
     @Test
-    void getNonExistentUser() {
-        Assertions.assertThrows(DataAccessException.class, () -> userDB.getUser("fakeUser"));
+    void getNonExistentUser() throws DataAccessException {
+        Assertions.assertNull(userDB.getUser("fakeUser"));
     }
 
     private int countTableEntries() throws SQLException, DataAccessException {

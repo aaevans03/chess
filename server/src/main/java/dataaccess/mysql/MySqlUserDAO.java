@@ -10,8 +10,14 @@ import java.sql.SQLException;
 
 public class MySqlUserDAO implements UserDAO {
 
-    private final String[] createStatements = {
-            """
+    /**
+     * Constructor that creates a table in the MySQL database.
+     *
+     * @throws DataAccessException Throws an exception when there's an error performing database operations.
+     */
+    public MySqlUserDAO() throws DataAccessException {
+        String[] createStatements = {
+                """
             CREATE TABLE IF NOT EXISTS userData (
             username VARCHAR(255) NOT NULL,
             password VARCHAR(255) NOT NULL,
@@ -19,14 +25,7 @@ public class MySqlUserDAO implements UserDAO {
             PRIMARY KEY (username)
             );
             """
-    };
-
-    /**
-     * Constructor that creates a table in the MySQL database.
-     *
-     * @throws DataAccessException Throws an exception when there's an error performing database operations.
-     */
-    public MySqlUserDAO() throws DataAccessException {
+        };
         DatabaseManager.configureDatabase(createStatements);
     }
 
@@ -54,15 +53,20 @@ public class MySqlUserDAO implements UserDAO {
     @Override
     public void clearUserData() throws DataAccessException {
 
+        final String[] clearStatements = new String[3];
+
+        clearStatements[0] = "SET FOREIGN_KEY_CHECKS = 0;";
+        clearStatements[1] = "TRUNCATE TABLE userData;";
+        clearStatements[2] = "SET FOREIGN_KEY_CHECKS = 1;";
+
         // create connection
         try (var conn = DatabaseManager.getConnection()) {
-
-            // prepare the statement
-            try (var preparedStatement = conn.prepareStatement("DROP TABLE userData;")) {
-                preparedStatement.executeUpdate();
+            // prepare the statements
+            for (String clearStatement : clearStatements) {
+                try (var preparedStatement = conn.prepareStatement(clearStatement)) {
+                    preparedStatement.executeUpdate();
+                }
             }
-            // re-configure the DB
-            DatabaseManager.configureDatabase(createStatements);
         } catch (SQLException | DataAccessException ex) {
             throw new DataAccessException(String.format("Unable to configure database: %s", ex.getMessage()));
         }
@@ -104,10 +108,6 @@ public class MySqlUserDAO implements UserDAO {
             }
         } catch (SQLException ex) {
             throw new DataAccessException(String.format("Unable to find user: %s", ex.getMessage()));
-        }
-
-        if (userData == null) {
-            throw new DataAccessException("Unable to find user: User doesn't exist");
         }
 
         return userData;
