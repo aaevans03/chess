@@ -46,15 +46,19 @@ class MySqlUserDAOTests {
     @Test
     void createUser() {
         try {
-            var userData = new UserData("jill", "mySecretPassword", "jill@mail.com");
-            userDB.createUser(userData);
+            var userData1 = new UserData("joe", "tooSECRET", "joe@mail.com");
+            var userData2 = new UserData("jill", "mySecretPassword", "jill@mail.com");
+            var userData3 = new UserData("james", "EXTRAsecret", "james@mail.com");
 
-            var retrievedUserData = userDB.getUser("jill");
+            userDB.createUser(userData1);
+            userDB.createUser(userData2);
+            userDB.createUser(userData3);
 
-            Assertions.assertEquals(userData.username(), retrievedUserData.username());
-            Assertions.assertTrue(BCrypt.checkpw("mySecretPassword", retrievedUserData.password()));
-            Assertions.assertEquals(userData.email(), retrievedUserData.email());
-            Assertions.assertEquals(1, countTableEntries());
+            checkUserData(userData1, userDB.getUser("joe"));
+            checkUserData(userData2, userDB.getUser("jill"));
+            checkUserData(userData3, userDB.getUser("james"));
+
+            Assertions.assertEquals(3, countTableEntries());
 
         } catch (DataAccessException | SQLException e) {
             System.out.println("Exception occurred: " + e.getMessage());
@@ -72,12 +76,33 @@ class MySqlUserDAOTests {
 
     @Test
     void getUser() {
+        try {
+            var userData1 = new UserData("user1", "password", "e@mail.com");
+            var userData2 = new UserData("user2", "password", "f@mail.com");
+            var userData3 = new UserData("user3", "password", "g@mail.com");
+            var userData4 = new UserData("user4", "password", "h@mail.com");
+            var userData5 = new UserData("user5", "password", "i@mail.com");
 
+            userDB.createUser(userData1);
+            userDB.createUser(userData2);
+            userDB.createUser(userData3);
+            userDB.createUser(userData4);
+            userDB.createUser(userData5);
+
+            checkUserData(userData1, userDB.getUser("user1"));
+            checkUserData(userData2, userDB.getUser("user2"));
+            checkUserData(userData3, userDB.getUser("user3"));
+            checkUserData(userData4, userDB.getUser("user4"));
+            checkUserData(userData5, userDB.getUser("user5"));
+
+        } catch (DataAccessException | SQLException e) {
+            System.out.println("Exception occurred: " + e.getMessage());
+        }
     }
 
     @Test
     void getNonExistentUser() {
-
+        Assertions.assertThrows(DataAccessException.class, () -> userDB.getUser("fakeUser"));
     }
 
     private int countTableEntries() throws SQLException, DataAccessException {
@@ -91,5 +116,11 @@ class MySqlUserDAOTests {
             }
         }
         return rowCount;
+    }
+
+    private void checkUserData(UserData expectedUserData, UserData retrievedUserData) throws SQLException, DataAccessException {
+        Assertions.assertEquals(expectedUserData.username(), retrievedUserData.username());
+        Assertions.assertTrue(BCrypt.checkpw(expectedUserData.password(), retrievedUserData.password()));
+        Assertions.assertEquals(expectedUserData.email(), retrievedUserData.email());
     }
 }

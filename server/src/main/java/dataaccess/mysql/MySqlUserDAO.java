@@ -103,7 +103,11 @@ public class MySqlUserDAO implements UserDAO {
                 }
             }
         } catch (SQLException ex) {
-            throw new DataAccessException(String.format("Unable to configure database: %s", ex.getMessage()));
+            throw new DataAccessException(String.format("Unable to find user: %s", ex.getMessage()));
+        }
+
+        if (userData == null) {
+            throw new DataAccessException("Unable to find user: User doesn't exist");
         }
 
         return userData;
