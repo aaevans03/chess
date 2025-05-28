@@ -63,14 +63,19 @@ class MySqlAuthDAOTests {
         try {
             MySqlTestHelper.createDummyUsers();
 
+            var authTokens = new String[5];
+
             for (int i = 1; i <= 5; i++) {
-                authDB.createAuthData("user" + i);
+                authTokens[i - 1] = (authDB.createAuthData("user" + i));
             }
 
             Assertions.assertEquals(5, MySqlTestHelper.countTableEntries("authData"));
 
             for (int i = 1; i <= 5; i++) {
-                Assertions.assertNotNull(authDB.getAuthDataWithUsername("user" + i));
+                var authData = authDB.getAuthDataWithUsername("user" + i);
+                Assertions.assertNotNull(authData);
+                Assertions.assertEquals(authTokens[i - 1], authData.authToken());
+                Assertions.assertEquals("user" + i, authData.username());
             }
 
         } catch (SQLException e) {
@@ -88,7 +93,7 @@ class MySqlAuthDAOTests {
 
     @Test
     void getAuthData() {
-        
+
     }
 
     @Test
