@@ -104,10 +104,10 @@ class MySqlAuthDAOTests {
     }
 
     @Test
-    void getAuthDataFail() {
-        Assertions.assertThrows(DataAccessException.class, () -> authDB.getAuthData("fake-auth-token1"));
-        Assertions.assertThrows(DataAccessException.class, () -> authDB.getAuthData("fake-auth-token2"));
-        Assertions.assertThrows(DataAccessException.class, () -> authDB.getAuthData("fake-auth-token3"));
+    void getAuthDataFail() throws DataAccessException {
+        Assertions.assertNull(authDB.getAuthData("fake-auth-token1"));
+        Assertions.assertNull(authDB.getAuthData("fake-auth-token2"));
+        Assertions.assertNull(authDB.getAuthData("fake-auth-token3"));
     }
 
     @Test
@@ -119,6 +119,7 @@ class MySqlAuthDAOTests {
         Assertions.assertNull(authDB.getAuthDataWithUsername("mynameisbob"));
     }
 
+    @Test
     void deleteAuthDataFail() {
         var fakeUser = new AuthData("fake-auth-token-xd", "myname");
         Assertions.assertThrows(DataAccessException.class, () -> authDB.deleteAuthData(fakeUser));

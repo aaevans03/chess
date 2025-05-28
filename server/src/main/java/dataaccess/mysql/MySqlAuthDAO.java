@@ -75,17 +75,17 @@ public class MySqlAuthDAO implements AuthDAO {
     @Override
     public AuthData getAuthData(String authToken) throws DataAccessException {
 
-        AuthData authData;
+        AuthData authData = null;
 
         try (var conn = DatabaseManager.getConnection()) {
             try (var preparedStatement = conn.prepareStatement("SELECT * FROM authData WHERE authToken=?")) {
                 preparedStatement.setString(1, authToken);
                 try (var resultSet = preparedStatement.executeQuery()) {
-                    resultSet.next();
-                    var returnedAuthToken = resultSet.getString("authToken");
-                    var returnedUsername = resultSet.getString("username");
-
-                    authData = new AuthData(returnedAuthToken, returnedUsername);
+                    while (resultSet.next()) {
+                        var returnedUsername = resultSet.getString("username");
+                        var returnedAuthToken = resultSet.getString("authToken");
+                        authData = new AuthData(returnedAuthToken, returnedUsername);
+                    }
                 }
             }
         } catch (SQLException ex) {
@@ -96,6 +96,12 @@ public class MySqlAuthDAO implements AuthDAO {
 
     @Override
     public void deleteAuthData(AuthData authData) throws DataAccessException {
+
+        var retrievedAuthData = getAuthData(authData.authToken());
+        if (retrievedAuthData == null) {
+            throw new DataAccessException("Unauthorized");
+        }
+
         try (var conn = DatabaseManager.getConnection()) {
             try (var preparedStatement = conn.prepareStatement("DELETE FROM authData WHERE authToken=?")) {
                 preparedStatement.setString(1, authData.authToken());
