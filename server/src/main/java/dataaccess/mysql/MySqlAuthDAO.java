@@ -81,17 +81,17 @@ public class MySqlAuthDAO implements AuthDAO {
             try (var preparedStatement = conn.prepareStatement("SELECT * FROM authData WHERE authToken=?")) {
                 preparedStatement.setString(1, authToken);
                 try (var resultSet = preparedStatement.executeQuery()) {
-                    while (resultSet.next()) {
+                    if (resultSet.next()) {
                         var returnedUsername = resultSet.getString("username");
                         var returnedAuthToken = resultSet.getString("authToken");
-                        authData = new AuthData(returnedAuthToken, returnedUsername);
+                        return new AuthData(returnedAuthToken, returnedUsername);
                     }
                 }
             }
         } catch (SQLException ex) {
             throw new DataAccessException(String.format("Unable to configure database: %s", ex.getMessage()));
         }
-        return authData;
+        return null;
     }
 
     @Override
