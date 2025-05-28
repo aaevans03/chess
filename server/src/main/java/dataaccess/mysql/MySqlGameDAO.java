@@ -28,7 +28,7 @@ public class MySqlGameDAO implements GameDAO {
     }
 
     @Override
-    public void updateGame(int gameID, String username, ChessGame.TeamColor playerColor) {
+    public void updateGame(int gameID, String username, ChessGame.TeamColor playerColor, ChessGame game) {
 
     }
 }

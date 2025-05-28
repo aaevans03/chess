@@ -78,7 +78,7 @@ public class ChessGame {
             newBoard.addPiece(endPos, targetPiece);
 
             // Check to see if the king is in check after that move
-            if (!isKingInCheck(newBoard,curColor)) {
+            if (!isKingInCheck(newBoard, curColor)) {
                 validMoves.add(move);
             }
         }
@@ -124,12 +124,13 @@ public class ChessGame {
      * @return True if the specified team is in check
      */
     public boolean isInCheck(TeamColor teamColor) {
-        return isKingInCheck(gameBoard,teamColor);
+        return isKingInCheck(gameBoard, teamColor);
     }
 
     /**
      * Helper function to determine if king is in check given a board
-     * @param board the chess board to run on
+     *
+     * @param board     the chess board to run on
      * @param teamColor the team color to run with
      * @return true if king is in check
      */
@@ -250,5 +251,13 @@ public class ChessGame {
     @Override
     public int hashCode() {
         return Objects.hash(gameBoard, currentTeamTurn);
+    }
+
+    @Override
+    public String toString() {
+        return "ChessGame{" +
+                "gameBoard=" + gameBoard +
+                ", currentTeamTurn=" + currentTeamTurn +
+                '}';
     }
 }

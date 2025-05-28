@@ -40,17 +40,23 @@ public class MemoryGameDAO implements GameDAO {
     }
 
     @Override
-    public void updateGame(int gameID, String username, ChessGame.TeamColor playerColor) {
+    public void updateGame(int gameID, String username, ChessGame.TeamColor playerColor, ChessGame game) {
         GameData currentGame = memoryGameData.get(gameID);
         // remove the current game state from memory
         memoryGameData.remove(gameID);
 
-        if (playerColor == ChessGame.TeamColor.WHITE) {
-            GameData newGame = new GameData(gameID, username, currentGame.blackUsername(), currentGame.gameName(), currentGame.game());
-            memoryGameData.put(gameID, newGame);
-        } else if (playerColor == ChessGame.TeamColor.BLACK) {
-            GameData newGame = new GameData(gameID, currentGame.whiteUsername(), username, currentGame.gameName(), currentGame.game());
-            memoryGameData.put(gameID, newGame);
+        if (game != null) {
+            GameData updatedGame = new GameData(gameID, currentGame.whiteUsername(),
+                    currentGame.blackUsername(), currentGame.gameName(), game);
+            memoryGameData.put(gameID, updatedGame);
+        } else if (username != null && playerColor == ChessGame.TeamColor.WHITE) {
+            GameData updatedGame = new GameData(gameID, username,
+                    currentGame.blackUsername(), currentGame.gameName(), currentGame.game());
+            memoryGameData.put(gameID, updatedGame);
+        } else if (username != null && playerColor == ChessGame.TeamColor.BLACK) {
+            GameData updatedGame = new GameData(gameID, currentGame.whiteUsername(),
+                    username, currentGame.gameName(), currentGame.game());
+            memoryGameData.put(gameID, updatedGame);
         }
     }
 }

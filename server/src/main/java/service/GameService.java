@@ -16,7 +16,7 @@ import service.result.ListResult;
 public class GameService {
     AuthDAO authDB;
     GameDAO gameDB;
-    
+
     public GameService(AuthDAO authDB, GameDAO gameDB) {
         this.authDB = authDB;
         this.gameDB = gameDB;
@@ -93,14 +93,14 @@ public class GameService {
                 if (game.whiteUsername() != null) {
                     throw new AlreadyTakenException();
                 }
-                gameDB.updateGame(gameID, authData.username(), ChessGame.TeamColor.WHITE);
+                gameDB.updateGame(gameID, authData.username(), ChessGame.TeamColor.WHITE, null);
             }
             case BLACK -> {
                 // 403, game already taken
                 if (game.blackUsername() != null) {
                     throw new AlreadyTakenException();
                 }
-                gameDB.updateGame(gameID, authData.username(), ChessGame.TeamColor.BLACK);
+                gameDB.updateGame(gameID, authData.username(), ChessGame.TeamColor.BLACK, null);
             }
         }
         return new JoinResult();

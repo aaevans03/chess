@@ -41,13 +41,13 @@ class GameServiceTests {
 
     void dummyGameList() {
         gameDB.createGame("game1");
-        gameDB.updateGame(1, "player1", ChessGame.TeamColor.WHITE);
-        gameDB.updateGame(1, "player2", ChessGame.TeamColor.BLACK);
+        gameDB.updateGame(1, "player1", ChessGame.TeamColor.WHITE, null);
+        gameDB.updateGame(1, "player2", ChessGame.TeamColor.BLACK, null);
         gameDB.createGame("game2");
-        gameDB.updateGame(2, "player3", ChessGame.TeamColor.WHITE);
-        gameDB.updateGame(2, "player4", ChessGame.TeamColor.BLACK);
+        gameDB.updateGame(2, "player3", ChessGame.TeamColor.WHITE, null);
+        gameDB.updateGame(2, "player4", ChessGame.TeamColor.BLACK, null);
         gameDB.createGame("game3");
-        gameDB.updateGame(3, "player5", ChessGame.TeamColor.WHITE);
+        gameDB.updateGame(3, "player5", ChessGame.TeamColor.WHITE, null);
     }
 
     @Test
