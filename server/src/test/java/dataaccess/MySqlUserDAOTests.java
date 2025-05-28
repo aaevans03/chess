@@ -32,11 +32,7 @@ class MySqlUserDAOTests {
     @Test
     void clearUserData() throws DataAccessException {
         try {
-            userDB.createUser(new UserData("user1", "password", "e@mail.com"));
-            userDB.createUser(new UserData("user2", "password", "f@mail.com"));
-            userDB.createUser(new UserData("user3", "password", "g@mail.com"));
-            userDB.createUser(new UserData("user4", "password", "h@mail.com"));
-            userDB.createUser(new UserData("user5", "password", "i@mail.com"));
+            MySqlTestHelper.createDummyUsers();
 
             userDB.clearUserData();
 
@@ -93,11 +89,7 @@ class MySqlUserDAOTests {
             var userData4 = new UserData("user4", "password", "h@mail.com");
             var userData5 = new UserData("user5", "password", "i@mail.com");
 
-            userDB.createUser(userData1);
-            userDB.createUser(userData2);
-            userDB.createUser(userData3);
-            userDB.createUser(userData4);
-            userDB.createUser(userData5);
+            MySqlTestHelper.createDummyUsers();
 
             checkUserData(userData1, userDB.getUser("user1"));
             checkUserData(userData2, userDB.getUser("user2"));

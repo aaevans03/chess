@@ -72,14 +72,12 @@ public class UserService {
         }
 
         var authToken = authDB.createAuthData(username);
-
         return new LoginResult(username, authToken);
     }
 
     public LogoutResult logout(LogoutRequest logoutRequest) throws DataAccessException {
 
         var authToken = logoutRequest.authToken();
-
         var dbData = authDB.getAuthData(authToken);
 
         // 401, unauthorized
@@ -88,7 +86,6 @@ public class UserService {
         }
 
         authDB.deleteAuthData(dbData);
-
         return new LogoutResult();
     }
 }
