@@ -4,6 +4,7 @@ import dataaccess.AuthDAO;
 import dataaccess.DataAccessException;
 import dataaccess.UserDAO;
 import model.UserData;
+import org.mindrot.jbcrypt.BCrypt;
 import server.exceptions.AlreadyTakenException;
 import server.exceptions.InvalidAuthTokenException;
 import server.exceptions.InvalidCredentialsException;
@@ -14,8 +15,6 @@ import service.request.RegisterRequest;
 import service.result.LoginResult;
 import service.result.LogoutResult;
 import service.result.RegisterResult;
-
-import java.util.Objects;
 
 public class UserService {
     UserDAO userDB;
@@ -65,8 +64,10 @@ public class UserService {
             throw new InvalidCredentialsException();
         }
 
+        // Check entered password against hashed database password
+        boolean verifyUser = BCrypt.checkpw(password, dbData.password());
         // 401, unauthorized
-        if (!Objects.equals(password, dbData.password())) {
+        if (!verifyUser) {
             throw new InvalidCredentialsException();
         }
 
