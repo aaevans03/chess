@@ -69,7 +69,6 @@ public class MySqlAuthDAO implements AuthDAO {
         } catch (SQLException ex) {
             throw new DataAccessException(String.format("Unable to configure database: %s", ex.getMessage()));
         }
-
         return newAuthToken;
     }
 
@@ -89,11 +88,9 @@ public class MySqlAuthDAO implements AuthDAO {
                     authData = new AuthData(returnedAuthToken, returnedUsername);
                 }
             }
-
         } catch (SQLException ex) {
             throw new DataAccessException(String.format("Unable to configure database: %s", ex.getMessage()));
         }
-
         return authData;
     }
 
@@ -107,7 +104,6 @@ public class MySqlAuthDAO implements AuthDAO {
         } catch (SQLException ex) {
             throw new DataAccessException(String.format("Unable to configure database: %s", ex.getMessage()));
         }
-
     }
 
     public AuthData getAuthDataWithUsername(String username) throws DataAccessException {
@@ -126,7 +122,6 @@ public class MySqlAuthDAO implements AuthDAO {
         } catch (SQLException ex) {
             throw new DataAccessException(String.format("Unable to configure database: %s", ex.getMessage()));
         }
-
         return authData;
     }
 
