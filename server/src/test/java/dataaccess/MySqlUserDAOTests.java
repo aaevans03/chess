@@ -2,6 +2,7 @@ package dataaccess;
 
 import dataaccess.mysql.MySqlUserDAO;
 import model.UserData;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -19,8 +20,13 @@ class MySqlUserDAOTests {
         userDB.clearUserData();
     }
 
+    @AfterAll
+    static void tearDown() throws DataAccessException {
+        new MySqlUserDAO().clearUserData();
+    }
+
     @Test
-    void clearUserData() {
+    void clearUserData() throws DataAccessException {
         try {
             userDB.createUser(new UserData("user1", "password", "e@mail.com"));
             userDB.createUser(new UserData("user2", "password", "f@mail.com"));
@@ -30,21 +36,21 @@ class MySqlUserDAOTests {
 
             userDB.clearUserData();
 
-            Assertions.assertNull(userDB.getUser("user1"));
-            Assertions.assertNull(userDB.getUser("user2"));
-            Assertions.assertNull(userDB.getUser("user3"));
-            Assertions.assertNull(userDB.getUser("user4"));
-            Assertions.assertNull(userDB.getUser("user5"));
+            Assertions.assertThrows(DataAccessException.class, () -> userDB.getUser("user1"));
+            Assertions.assertThrows(DataAccessException.class, () -> userDB.getUser("user2"));
+            Assertions.assertThrows(DataAccessException.class, () -> userDB.getUser("user3"));
+            Assertions.assertThrows(DataAccessException.class, () -> userDB.getUser("user4"));
+            Assertions.assertThrows(DataAccessException.class, () -> userDB.getUser("user5"));
 
             Assertions.assertEquals(0, countTableEntries());
 
         } catch (DataAccessException | SQLException e) {
-            System.out.println("Exception occurred: " + e.getMessage());
+            throw new DataAccessException("Exception occurred: " + e.getMessage());
         }
     }
 
     @Test
-    void createUser() {
+    void createUser() throws DataAccessException {
         try {
             var userData1 = new UserData("joe", "tooSECRET", "joe@mail.com");
             var userData2 = new UserData("jill", "mySecretPassword", "jill@mail.com");
@@ -61,7 +67,7 @@ class MySqlUserDAOTests {
             Assertions.assertEquals(3, countTableEntries());
 
         } catch (DataAccessException | SQLException e) {
-            System.out.println("Exception occurred: " + e.getMessage());
+            throw new DataAccessException("Exception occurred: " + e.getMessage());
         }
     }
 
@@ -75,7 +81,7 @@ class MySqlUserDAOTests {
     }
 
     @Test
-    void getUser() {
+    void getUser() throws DataAccessException {
         try {
             var userData1 = new UserData("user1", "password", "e@mail.com");
             var userData2 = new UserData("user2", "password", "f@mail.com");
@@ -96,7 +102,7 @@ class MySqlUserDAOTests {
             checkUserData(userData5, userDB.getUser("user5"));
 
         } catch (DataAccessException | SQLException e) {
-            System.out.println("Exception occurred: " + e.getMessage());
+            throw new DataAccessException("Exception occurred: " + e.getMessage());
         }
     }
 
