@@ -42,7 +42,7 @@ class MySqlUserDAOTests {
             Assertions.assertNull(userDB.getUser("user4"));
             Assertions.assertNull(userDB.getUser("user5"));
 
-            Assertions.assertEquals(0, countTableEntries());
+            Assertions.assertEquals(0, MySqlTestHelper.countTableEntries("userData"));
 
         } catch (DataAccessException | SQLException e) {
             throw new DataAccessException("Exception occurred: " + e.getMessage());
@@ -64,7 +64,7 @@ class MySqlUserDAOTests {
             checkUserData(userData2, userDB.getUser("jill"));
             checkUserData(userData3, userDB.getUser("james"));
 
-            Assertions.assertEquals(3, countTableEntries());
+            Assertions.assertEquals(3, MySqlTestHelper.countTableEntries("userData"));
 
         } catch (DataAccessException | SQLException e) {
             throw new DataAccessException("Exception occurred: " + e.getMessage());
@@ -105,19 +105,6 @@ class MySqlUserDAOTests {
     @Test
     void getNonExistentUser() throws DataAccessException {
         Assertions.assertNull(userDB.getUser("fakeUser"));
-    }
-
-    private int countTableEntries() throws SQLException, DataAccessException {
-        int rowCount;
-        try (var conn = DatabaseManager.getConnection()) {
-            try (var preparedStatement = conn.prepareStatement("SELECT COUNT(username) FROM userData")) {
-                try (var resultSet = preparedStatement.executeQuery()) {
-                    resultSet.next();
-                    rowCount = resultSet.getInt(1);
-                }
-            }
-        }
-        return rowCount;
     }
 
     private void checkUserData(UserData expectedUserData, UserData retrievedUserData) throws SQLException, DataAccessException {

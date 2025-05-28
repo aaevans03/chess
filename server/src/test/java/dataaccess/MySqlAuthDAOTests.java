@@ -51,7 +51,7 @@ class MySqlAuthDAOTests {
             Assertions.assertNull(authDB.getAuthDataWithUsername("user4"));
             Assertions.assertNull(authDB.getAuthDataWithUsername("user5"));
 
-            Assertions.assertEquals(0, countTableEntries("authData"));
+            Assertions.assertEquals(0, MySqlTestHelper.countTableEntries("authData"));
 
         } catch (SQLException e) {
             throw new DataAccessException("Exception occurred: " + e.getMessage());
@@ -67,7 +67,7 @@ class MySqlAuthDAOTests {
                 authDB.createAuthData("user" + i);
             }
 
-            Assertions.assertEquals(5, countTableEntries("authData"));
+            Assertions.assertEquals(5, MySqlTestHelper.countTableEntries("authData"));
 
             for (int i = 1; i <= 5; i++) {
                 Assertions.assertNotNull(authDB.getAuthDataWithUsername("user" + i));
@@ -88,22 +88,15 @@ class MySqlAuthDAOTests {
 
     @Test
     void getAuthData() {
+        
+    }
+
+    @Test
+    void getAuthDataFail() {
+
     }
 
     @Test
     void deleteAuthData() {
-    }
-
-    private int countTableEntries(String table) throws SQLException, DataAccessException {
-        int rowCount;
-        try (var conn = DatabaseManager.getConnection()) {
-            try (var preparedStatement = conn.prepareStatement("SELECT COUNT(username) FROM " + table)) {
-                try (var resultSet = preparedStatement.executeQuery()) {
-                    resultSet.next();
-                    rowCount = resultSet.getInt(1);
-                }
-            }
-        }
-        return rowCount;
     }
 }
