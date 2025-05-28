@@ -4,6 +4,7 @@ import dataaccess.DataAccessException;
 import dataaccess.DatabaseManager;
 import dataaccess.UserDAO;
 import model.UserData;
+import org.mindrot.jbcrypt.BCrypt;
 
 import java.sql.SQLException;
 
@@ -27,9 +28,9 @@ public class MySqlUserDAO implements UserDAO {
 
         try {
             var userDB = new MySqlUserDAO();
-//            userDB.clearUserData();
+            userDB.clearUserData();
 
-            var newUser = new UserData("alex", "987654321", "b@xd.com");
+            var newUser = new UserData("alex", "password", "a@xd.com");
             userDB.createUser(newUser);
 
         } catch (Throwable e) {
@@ -60,7 +61,7 @@ public class MySqlUserDAO implements UserDAO {
             try (var preparedStatement = conn.prepareStatement(
                     "INSERT INTO userData (username, password, email) VALUES (?, ?, ?)")) {
                 preparedStatement.setString(1, userData.username());
-                preparedStatement.setString(2, userData.password()); // TODO: hash password
+                preparedStatement.setString(2, hashPassword(userData.password()));
                 preparedStatement.setString(3, userData.email());
                 preparedStatement.executeUpdate();
             }
@@ -97,5 +98,9 @@ public class MySqlUserDAO implements UserDAO {
         } catch (SQLException ex) {
             throw new DataAccessException(String.format("Unable to configure database: %s", ex.getMessage()));
         }
+    }
+
+    private String hashPassword(String clearTextPassword) {
+        return BCrypt.hashpw(clearTextPassword, BCrypt.gensalt());
     }
 }

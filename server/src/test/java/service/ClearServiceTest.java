@@ -1,5 +1,6 @@
 package service;
 
+import dataaccess.DataAccessException;
 import dataaccess.memory.MemoryAuthDAO;
 import dataaccess.memory.MemoryGameDAO;
 import dataaccess.memory.MemoryUserDAO;
@@ -29,7 +30,11 @@ public class ClearServiceTest {
         gameDB.createGame("3rd Game");
 
         var clearService = new ClearService(userDB, authDB, gameDB);
-        clearService.clear();
+        try {
+            clearService.clear();
+        } catch (DataAccessException e) {
+            throw new RuntimeException(e);
+        }
 
         // Expected maps/arrays
         var expectedUserDB = new HashMap<>();
