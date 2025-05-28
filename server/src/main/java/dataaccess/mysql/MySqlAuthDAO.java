@@ -6,6 +6,7 @@ import dataaccess.DatabaseManager;
 import model.AuthData;
 
 import java.sql.SQLException;
+import java.util.UUID;
 
 public class MySqlAuthDAO implements AuthDAO {
 
@@ -56,17 +57,60 @@ public class MySqlAuthDAO implements AuthDAO {
     }
 
     @Override
-    public String createAuthData(String username) {
-        return "";
+    public String createAuthData(String username) throws DataAccessException {
+        String newAuthToken = generateAuthToken();
+
+        try (var conn = DatabaseManager.getConnection()) {
+            try (var preparedStatement = conn.prepareStatement("INSERT INTO authData VALUES (?, ?)")) {
+                preparedStatement.setString(1, newAuthToken);
+                preparedStatement.setString(2, username);
+                preparedStatement.executeUpdate();
+            }
+        } catch (SQLException ex) {
+            throw new DataAccessException(String.format("Unable to configure database: %s", ex.getMessage()));
+        }
+
+        return newAuthToken;
     }
 
     @Override
-    public AuthData getAuthData(String authToken) {
-        return null;
+    public AuthData getAuthData(String authToken) throws DataAccessException {
+
+        AuthData authData;
+
+        try (var conn = DatabaseManager.getConnection()) {
+            try (var preparedStatement = conn.prepareStatement("SELECT * FROM authData WHERE authToken=?")) {
+                preparedStatement.setString(1, authToken);
+                try (var resultSet = preparedStatement.executeQuery()) {
+                    resultSet.next();
+                    var returnedAuthToken = resultSet.getString("authToken");
+                    var returnedUsername = resultSet.getString("username");
+
+                    authData = new AuthData(returnedAuthToken, returnedUsername);
+                }
+            }
+
+        } catch (SQLException ex) {
+            throw new DataAccessException(String.format("Unable to configure database: %s", ex.getMessage()));
+        }
+
+        return authData;
     }
 
     @Override
-    public void deleteAuthData(AuthData authData) {
+    public void deleteAuthData(AuthData authData) throws DataAccessException {
+        try (var conn = DatabaseManager.getConnection()) {
+            try (var preparedStatement = conn.prepareStatement("DELETE FROM authData WHERE authToken=?")) {
+                preparedStatement.setString(1, authData.authToken());
+                preparedStatement.executeUpdate();
+            }
+        } catch (SQLException ex) {
+            throw new DataAccessException(String.format("Unable to configure database: %s", ex.getMessage()));
+        }
 
+    }
+
+    private String generateAuthToken() {
+        return UUID.randomUUID().toString();
     }
 }

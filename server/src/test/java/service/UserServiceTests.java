@@ -67,6 +67,7 @@ class UserServiceTests {
         // check and see if the expected AuthData matches the RegisterResult
         var expectedAuthData = authDB.getMap().values().toArray(new AuthData[0]);
         Assertions.assertEquals(1, expectedAuthData.length);
+        Assertions.assertNotNull(registerResult);
         Assertions.assertEquals(expectedAuthData[0].authToken(), registerResult.authToken());
         Assertions.assertEquals(expectedAuthData[0].username(), registerResult.username());
     }
@@ -104,6 +105,7 @@ class UserServiceTests {
         // check and see if the expected AuthData matches the LoginResult
         var expectedAuthData = authDB.getMap().values().toArray(new AuthData[0]);
         Assertions.assertEquals(1, expectedAuthData.length);
+        Assertions.assertNotNull(loginResult);
         Assertions.assertEquals(expectedAuthData[0].authToken(), loginResult.authToken());
         Assertions.assertEquals(expectedAuthData[0].username(), loginResult.username());
     }
@@ -122,7 +124,7 @@ class UserServiceTests {
 
     @Test
         // successfully log out a user
-    void logoutUser() {
+    void logoutUser() throws DataAccessException {
         // create user
         UserData user = new UserData("bob", "password", "e@mail.com");
         userDB.createUser(user);
@@ -136,6 +138,7 @@ class UserServiceTests {
         }
 
         // use the AuthToken to log them out
+        Assertions.assertNotNull(loginResult);
         var logoutRequest = new LogoutRequest(loginResult.authToken());
         userService.logout(logoutRequest);
 

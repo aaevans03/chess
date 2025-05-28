@@ -18,7 +18,7 @@ public class GameHandler {
         gameService = new GameService(authDB, gameDB);
     }
 
-    public Object handleList(Request request, Response response) {
+    public Object handleList(Request request, Response response) throws DataAccessException {
         // get header
         var input = request.headers("authorization");
 

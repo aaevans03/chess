@@ -51,7 +51,7 @@ class GameServiceTests {
     }
 
     @Test
-    void listAllGames() {
+    void listAllGames() throws DataAccessException {
         // create a list of games, make a list manually
         var game1 = new GameData(1, "player1", "player2", "game1", new ChessGame());
         var game2 = new GameData(2, "player3", "player4", "game2", new ChessGame());

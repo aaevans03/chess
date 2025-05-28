@@ -22,7 +22,7 @@ public class GameService {
         this.gameDB = gameDB;
     }
 
-    public ListResult list(ListRequest listRequest) {
+    public ListResult list(ListRequest listRequest) throws DataAccessException {
         var authToken = listRequest.authToken();
 
         var authData = authDB.getAuthData(authToken);

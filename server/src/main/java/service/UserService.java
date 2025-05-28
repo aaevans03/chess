@@ -76,7 +76,7 @@ public class UserService {
         return new LoginResult(username, authToken);
     }
 
-    public LogoutResult logout(LogoutRequest logoutRequest) {
+    public LogoutResult logout(LogoutRequest logoutRequest) throws DataAccessException {
 
         var authToken = logoutRequest.authToken();
 

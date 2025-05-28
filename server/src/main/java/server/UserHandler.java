@@ -42,7 +42,7 @@ public class UserHandler {
         return objectEncoderDecoder.encode(result);
     }
 
-    public Object handleLogout(Request request, Response response) {
+    public Object handleLogout(Request request, Response response) throws DataAccessException {
         // get header
         var input = request.headers("authorization");
 
