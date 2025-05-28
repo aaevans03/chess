@@ -30,7 +30,7 @@ public class UserHandler {
         return objectEncoderDecoder.encode(result);
     }
 
-    public Object handleLogin(Request request, Response response) {
+    public Object handleLogin(Request request, Response response) throws DataAccessException {
         // decode object, make new LoginRequest
         var objectEncoderDecoder = new ObjectEncoderDecoder();
         LoginRequest input = (LoginRequest) objectEncoderDecoder.decode(request.body(), LoginRequest.class);

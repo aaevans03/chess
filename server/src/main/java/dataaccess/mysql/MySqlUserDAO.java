@@ -33,8 +33,10 @@ public class MySqlUserDAO implements UserDAO {
             var newUser = new UserData("alex", "password", "a@xd.com");
             userDB.createUser(newUser);
 
+            System.out.println(userDB.getUser("alex").toString());
+
         } catch (Throwable e) {
-            System.out.println("something went wrong: " + e.getMessage());
+            System.out.println("Exception: " + e.getMessage());
         }
     }
 
@@ -71,8 +73,29 @@ public class MySqlUserDAO implements UserDAO {
     }
 
     @Override
-    public UserData getUser(String username) {
-        return null;
+    public UserData getUser(String username) throws DataAccessException {
+
+        UserData userData = null;
+
+        try (var conn = DatabaseManager.getConnection()) {
+            try (var preparedStatement = conn.prepareStatement(
+                    "SELECT username, password, email FROM userData WHERE username=?")) {
+                preparedStatement.setString(1, username);
+                try (var resultSet = preparedStatement.executeQuery()) {
+                    while (resultSet.next()) {
+                        var returnedUsername = resultSet.getString("username");
+                        var returnedPassword = resultSet.getString("password");
+                        var returnedEmail = resultSet.getString("email");
+
+                        userData = new UserData(returnedUsername, returnedPassword, returnedEmail);
+                    }
+                }
+            }
+        } catch (SQLException ex) {
+            throw new DataAccessException(String.format("Unable to configure database: %s", ex.getMessage()));
+        }
+
+        return userData;
     }
 
     private final String[] createStatements = {

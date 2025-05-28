@@ -48,7 +48,7 @@ public class UserService {
         return new RegisterResult(username, authToken);
     }
 
-    public LoginResult login(LoginRequest loginRequest) throws InvalidCredentialsException {
+    public LoginResult login(LoginRequest loginRequest) throws InvalidCredentialsException, DataAccessException {
 
         var username = loginRequest.username();
         var password = loginRequest.password();
