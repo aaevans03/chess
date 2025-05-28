@@ -1,6 +1,7 @@
 package service;
 
 import dataaccess.AuthDAO;
+import dataaccess.DataAccessException;
 import dataaccess.UserDAO;
 import model.UserData;
 import server.exceptions.AlreadyTakenException;
@@ -25,7 +26,7 @@ public class UserService {
         this.authDB = authDB;
     }
 
-    public RegisterResult register(RegisterRequest registerRequest) throws AlreadyTakenException {
+    public RegisterResult register(RegisterRequest registerRequest) throws AlreadyTakenException, DataAccessException {
 
         var username = registerRequest.username();
         var password = registerRequest.password();

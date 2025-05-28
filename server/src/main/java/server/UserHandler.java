@@ -1,6 +1,7 @@
 package server;
 
 import dataaccess.AuthDAO;
+import dataaccess.DataAccessException;
 import dataaccess.UserDAO;
 import service.UserService;
 import service.request.LoginRequest;
@@ -17,7 +18,7 @@ public class UserHandler {
         userService = new UserService(userDB, authDB);
     }
 
-    public Object handleRegister(Request request, Response response) {
+    public Object handleRegister(Request request, Response response) throws DataAccessException {
         // decode object, make new RegisterRequest
         var objectEncoderDecoder = new ObjectEncoderDecoder();
         RegisterRequest input = (RegisterRequest) objectEncoderDecoder.decode(request.body(), RegisterRequest.class);

@@ -27,7 +27,11 @@ public class MySqlUserDAO implements UserDAO {
 
         try {
             var userDB = new MySqlUserDAO();
-            userDB.clearUserData();
+//            userDB.clearUserData();
+
+            var newUser = new UserData("alex", "987654321", "b@xd.com");
+            userDB.createUser(newUser);
+
         } catch (Throwable e) {
             System.out.println("something went wrong: " + e.getMessage());
         }
@@ -40,8 +44,8 @@ public class MySqlUserDAO implements UserDAO {
         try (var conn = DatabaseManager.getConnection()) {
 
             // prepare the statement
-            try (var ps = conn.prepareStatement("DROP DATABASE CHESS;")) {
-                ps.executeUpdate();
+            try (var preparedStatement = conn.prepareStatement("DROP DATABASE CHESS;")) {
+                preparedStatement.executeUpdate();
             }
             // reset the DB
             configureDatabase();
@@ -51,8 +55,18 @@ public class MySqlUserDAO implements UserDAO {
     }
 
     @Override
-    public void createUser(UserData userData) {
-
+    public void createUser(UserData userData) throws DataAccessException {
+        try (var conn = DatabaseManager.getConnection()) {
+            try (var preparedStatement = conn.prepareStatement(
+                    "INSERT INTO userData (username, password, email) VALUES (?, ?, ?)")) {
+                preparedStatement.setString(1, userData.username());
+                preparedStatement.setString(2, userData.password()); // TODO: hash password
+                preparedStatement.setString(3, userData.email());
+                preparedStatement.executeUpdate();
+            }
+        } catch (SQLException ex) {
+            throw new DataAccessException(String.format("Unable to configure database: %s", ex.getMessage()));
+        }
     }
 
     @Override
