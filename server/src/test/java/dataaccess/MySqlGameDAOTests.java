@@ -45,9 +45,7 @@ class MySqlGameDAOTests {
 
             for (int i = 1; i <= 5; i++) {
                 int finalI = i;
-                Assertions.assertThrows(DataAccessException.class, () -> {
-                    gameDB.getGame(finalI);
-                });
+                Assertions.assertThrows(DataAccessException.class, () -> gameDB.getGame(finalI));
             }
 
             Assertions.assertEquals(0, MySqlTestHelper.countTableEntries("gameData", "gameID"));
@@ -129,19 +127,18 @@ class MySqlGameDAOTests {
         createDummyGames();
 
         // invalid game ID
-        Assertions.assertThrows(DataAccessException.class, () -> {
-            gameDB.updateGame(0, "fakePlayer", ChessGame.TeamColor.WHITE, null);
-        });
+        Assertions.assertThrows(DataAccessException.class, () ->
+                gameDB.updateGame(0, "fakePlayer", ChessGame.TeamColor.WHITE, null));
 
         // no ChessGame/username provided
-        Assertions.assertThrows(DataAccessException.class, () -> {
-            gameDB.updateGame(0, null, null, null);
-        });
+        Assertions.assertThrows(DataAccessException.class, () ->
+                gameDB.updateGame(0, null, null, null));
 
         // one game is already full
         gameDB.updateGame(1, "user1", ChessGame.TeamColor.WHITE, null);
 
-        var expected = new GameData(1, "user4", "user2", "game1", new ChessGame());
+        var expected = new GameData(1,
+                "user4", "user2", "game1", new ChessGame());
         Assertions.assertEquals(expected, gameDB.getGame(1));
     }
 
