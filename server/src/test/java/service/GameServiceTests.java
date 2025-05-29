@@ -11,6 +11,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import server.exceptions.AlreadyTakenException;
 import server.exceptions.InvalidAuthTokenException;
+import server.exceptions.InvalidInputException;
 import service.request.CreateRequest;
 import service.request.JoinRequest;
 import service.request.ListRequest;
@@ -119,7 +120,7 @@ class GameServiceTests {
 
         // missing field
         var joinRequest2 = new JoinRequest(authToken, null, 3);
-        Assertions.assertThrows(DataAccessException.class, () -> gameService.join(joinRequest2));
+        Assertions.assertThrows(InvalidInputException.class, () -> gameService.join(joinRequest2));
 
         // invalid game ID
         var joinRequest3 = new JoinRequest(authToken, ChessGame.TeamColor.BLACK, 123);

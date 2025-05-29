@@ -6,6 +6,7 @@ import dataaccess.DataAccessException;
 import dataaccess.GameDAO;
 import server.exceptions.AlreadyTakenException;
 import server.exceptions.InvalidAuthTokenException;
+import server.exceptions.InvalidInputException;
 import service.request.CreateRequest;
 import service.request.JoinRequest;
 import service.request.ListRequest;
@@ -44,7 +45,7 @@ public class GameService {
 
         // 400, bad request
         if (gameName == null) {
-            throw new DataAccessException("no game name provided");
+            throw new InvalidInputException();
         }
 
         // 401, unauthorized
@@ -67,12 +68,12 @@ public class GameService {
 
         // 400, bad request
         if (playerColor == null) {
-            throw new DataAccessException("no team color provided");
+            throw new InvalidInputException();
         }
 
         // 400, bad request
-        if (gameID == 0) {
-            throw new DataAccessException("invalid game ID entered");
+        if (gameID < 1) {
+            throw new InvalidInputException();
         }
 
         // 401, unauthorized
