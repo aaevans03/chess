@@ -10,6 +10,7 @@ import server.ObjectEncoderDecoder;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Objects;
 
 import static java.sql.Statement.RETURN_GENERATED_KEYS;
 
@@ -98,6 +99,10 @@ public class MySqlGameDAO implements GameDAO {
         var newGame = new ChessGame();
         var encodedGame = new ObjectEncoderDecoder().encode(newGame);
 
+        if (Objects.equals(gameName, "")) {
+            throw new DataAccessException("Game name cannot be empty");
+        }
+
         try (var conn = DatabaseManager.getConnection()) {
             try (var preparedStatement = conn.prepareStatement("INSERT INTO gameData (whiteUsername," +
                     "blackUsername, gameName, game) VALUES (?, ?, ?, ?)", RETURN_GENERATED_KEYS)) {
@@ -129,12 +134,12 @@ public class MySqlGameDAO implements GameDAO {
                     if (resultSet.next()) {
                         return parseGame(resultSet);
                     }
+                    throw new DataAccessException("No game found");
                 }
             }
         } catch (SQLException ex) {
             throw new DataAccessException(String.format("Unable to configure database: %s", ex.getMessage()));
         }
-        return null;
     }
 
     @Override
@@ -148,6 +153,8 @@ public class MySqlGameDAO implements GameDAO {
         // update the usernames
         else if (username != null) {
             updateGameUser(gameID, username, playerColor);
+        } else {
+            throw new DataAccessException("no input provided");
         }
     }
 
@@ -166,7 +173,8 @@ public class MySqlGameDAO implements GameDAO {
 
     private void updateGameUser(int gameID, String username, ChessGame.TeamColor color) throws DataAccessException {
         String sql = ("UPDATE gameData SET " +
-                (color == ChessGame.TeamColor.WHITE ? "whiteUsername" : "blackUsername") + "=? WHERE gameID=?;");
+                (color == ChessGame.TeamColor.WHITE ? "whiteUsername" : "blackUsername") + "=? WHERE gameID=? AND " +
+                (color == ChessGame.TeamColor.WHITE ? "whiteUsername" : "blackUsername") + " IS NULL;");
         try (var conn = DatabaseManager.getConnection()) {
             try (var preparedStatement = conn.prepareStatement(sql)) {
                 preparedStatement.setString(1, username);
