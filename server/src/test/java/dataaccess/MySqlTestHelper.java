@@ -15,10 +15,10 @@ public class MySqlTestHelper {
         userDB.createUser(new UserData("user5", "password", "i@mail.com"));
     }
 
-    public static int countTableEntries(String table) throws SQLException, DataAccessException {
+    public static int countTableEntries(String table, String columnToCount) throws SQLException, DataAccessException {
         int rowCount;
         try (var conn = DatabaseManager.getConnection()) {
-            try (var preparedStatement = conn.prepareStatement("SELECT COUNT(username) FROM " + table)) {
+            try (var preparedStatement = conn.prepareStatement("SELECT COUNT(" + columnToCount + ") FROM " + table)) {
                 try (var resultSet = preparedStatement.executeQuery()) {
                     resultSet.next();
                     rowCount = resultSet.getInt(1);

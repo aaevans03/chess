@@ -53,7 +53,7 @@ class MySqlAuthDAOTests {
             Assertions.assertNull(authDB.getAuthDataWithUsername("user4"));
             Assertions.assertNull(authDB.getAuthDataWithUsername("user5"));
 
-            Assertions.assertEquals(0, MySqlTestHelper.countTableEntries("authData"));
+            Assertions.assertEquals(0, MySqlTestHelper.countTableEntries("authData", "username"));
 
         } catch (SQLException e) {
             throw new DataAccessException("Exception occurred: " + e.getMessage());
@@ -69,7 +69,7 @@ class MySqlAuthDAOTests {
                 authTokens[i - 1] = (authDB.createAuthData("user" + i));
             }
 
-            Assertions.assertEquals(5, MySqlTestHelper.countTableEntries("authData"));
+            Assertions.assertEquals(5, MySqlTestHelper.countTableEntries("authData", "username"));
 
             for (int i = 1; i <= 5; i++) {
                 var authData = authDB.getAuthDataWithUsername("user" + i);

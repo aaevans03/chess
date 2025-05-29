@@ -42,7 +42,7 @@ class MySqlUserDAOTests {
             Assertions.assertNull(userDB.getUser("user4"));
             Assertions.assertNull(userDB.getUser("user5"));
 
-            Assertions.assertEquals(0, MySqlTestHelper.countTableEntries("userData"));
+            Assertions.assertEquals(0, MySqlTestHelper.countTableEntries("userData", "username"));
 
         } catch (DataAccessException | SQLException e) {
             throw new DataAccessException("Exception occurred: " + e.getMessage());
@@ -64,7 +64,7 @@ class MySqlUserDAOTests {
             checkUserData(userData2, userDB.getUser("jill"));
             checkUserData(userData3, userDB.getUser("james"));
 
-            Assertions.assertEquals(3, MySqlTestHelper.countTableEntries("userData"));
+            Assertions.assertEquals(3, MySqlTestHelper.countTableEntries("userData", "username"));
 
         } catch (DataAccessException | SQLException e) {
             throw new DataAccessException("Exception occurred: " + e.getMessage());
