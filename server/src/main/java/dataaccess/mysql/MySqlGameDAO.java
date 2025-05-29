@@ -123,7 +123,7 @@ public class MySqlGameDAO implements GameDAO {
     @Override
     public GameData getGame(int gameID) throws DataAccessException {
         try (var conn = DatabaseManager.getConnection()) {
-            try (var preparedStatement = conn.prepareStatement("SELECT * from gameData WHERE gameID=?;")) {
+            try (var preparedStatement = conn.prepareStatement("SELECT * FROM gameData WHERE gameID=?;")) {
                 preparedStatement.setInt(1, gameID);
                 try (var resultSet = preparedStatement.executeQuery()) {
                     if (resultSet.next()) {
@@ -138,7 +138,44 @@ public class MySqlGameDAO implements GameDAO {
     }
 
     @Override
-    public void updateGame(int gameID, String username, ChessGame.TeamColor playerColor, ChessGame game) {
+    public void updateGame(int gameID, String username, ChessGame.TeamColor playerColor, ChessGame game) throws DataAccessException {
+        GameData currentGame = getGame(gameID);
+
+        // update the game
+        if (game != null) {
+            updateGameGameObj(currentGame, game);
+        }
+        // update the usernames
+        else if (username != null) {
+            updateGameUser(gameID, username, playerColor);
+        }
+    }
+
+    private void updateGameGameObj(GameData gameData, ChessGame game) throws DataAccessException {
+        var encodedGame = new ObjectEncoderDecoder().encode(game);
+        try (var conn = DatabaseManager.getConnection()) {
+            try (var preparedStatement = conn.prepareStatement("UPDATE gameData SET game=? WHERE gameID=?;")) {
+                preparedStatement.setString(1, encodedGame);
+                preparedStatement.setInt(2, gameData.gameID());
+                preparedStatement.executeUpdate();
+            }
+        } catch (SQLException ex) {
+            throw new DataAccessException(String.format("Unable to configure database: %s", ex.getMessage()));
+        }
+    }
+
+    private void updateGameUser(int gameID, String username, ChessGame.TeamColor color) throws DataAccessException {
+        String sql = ("UPDATE gameData SET " +
+                (color == ChessGame.TeamColor.WHITE ? "whiteUsername" : "blackUsername") + "=? WHERE gameID=?;");
+        try (var conn = DatabaseManager.getConnection()) {
+            try (var preparedStatement = conn.prepareStatement(sql)) {
+                preparedStatement.setString(1, username);
+                preparedStatement.setInt(2, gameID);
+                preparedStatement.executeUpdate();
+            }
+        } catch (SQLException ex) {
+            throw new DataAccessException(String.format("Unable to configure database: %s", ex.getMessage()));
+        }
 
     }
 
