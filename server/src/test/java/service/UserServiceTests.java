@@ -13,11 +13,11 @@ import org.mindrot.jbcrypt.BCrypt;
 import server.exceptions.AlreadyTakenException;
 import server.exceptions.InvalidAuthTokenException;
 import server.exceptions.InvalidCredentialsException;
-import service.request.LoginRequest;
-import service.request.LogoutRequest;
-import service.request.RegisterRequest;
-import service.result.LoginResult;
-import service.result.RegisterResult;
+import server.request.LoginRequest;
+import server.request.LogoutRequest;
+import server.request.RegisterRequest;
+import server.result.LoginResult;
+import server.result.RegisterResult;
 
 import java.util.HashMap;
 

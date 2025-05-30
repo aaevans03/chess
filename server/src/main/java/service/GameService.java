@@ -7,12 +7,12 @@ import dataaccess.GameDAO;
 import server.exceptions.AlreadyTakenException;
 import server.exceptions.InvalidAuthTokenException;
 import server.exceptions.InvalidInputException;
-import service.request.CreateRequest;
-import service.request.JoinRequest;
-import service.request.ListRequest;
-import service.result.CreateResult;
-import service.result.JoinResult;
-import service.result.ListResult;
+import server.request.CreateRequest;
+import server.request.JoinRequest;
+import server.request.ListRequest;
+import server.result.CreateResult;
+import server.result.JoinResult;
+import server.result.ListResult;
 
 public class GameService {
     AuthDAO authDB;

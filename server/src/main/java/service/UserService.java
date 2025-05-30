@@ -9,12 +9,12 @@ import server.exceptions.AlreadyTakenException;
 import server.exceptions.InvalidAuthTokenException;
 import server.exceptions.InvalidCredentialsException;
 import server.exceptions.InvalidInputException;
-import service.request.LoginRequest;
-import service.request.LogoutRequest;
-import service.request.RegisterRequest;
-import service.result.LoginResult;
-import service.result.LogoutResult;
-import service.result.RegisterResult;
+import server.request.LoginRequest;
+import server.request.LogoutRequest;
+import server.request.RegisterRequest;
+import server.result.LoginResult;
+import server.result.LogoutResult;
+import server.result.RegisterResult;
 
 public class UserService {
     UserDAO userDB;

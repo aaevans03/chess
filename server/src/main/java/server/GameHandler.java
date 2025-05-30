@@ -3,10 +3,10 @@ package server;
 import dataaccess.AuthDAO;
 import dataaccess.DataAccessException;
 import dataaccess.GameDAO;
+import server.request.CreateRequest;
+import server.request.JoinRequest;
+import server.request.ListRequest;
 import service.GameService;
-import service.request.CreateRequest;
-import service.request.JoinRequest;
-import service.request.ListRequest;
 import spark.Request;
 import spark.Response;
 

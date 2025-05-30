@@ -1,4 +1,4 @@
-package service.result;
+package server.result;
 
 public record JoinResult() {
 }

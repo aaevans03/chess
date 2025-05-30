@@ -12,9 +12,9 @@ import org.junit.jupiter.api.Test;
 import server.exceptions.AlreadyTakenException;
 import server.exceptions.InvalidAuthTokenException;
 import server.exceptions.InvalidInputException;
-import service.request.CreateRequest;
-import service.request.JoinRequest;
-import service.request.ListRequest;
+import server.request.CreateRequest;
+import server.request.JoinRequest;
+import server.request.ListRequest;
 
 import java.util.ArrayList;
 

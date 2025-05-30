@@ -3,10 +3,10 @@ package server;
 import dataaccess.AuthDAO;
 import dataaccess.DataAccessException;
 import dataaccess.UserDAO;
+import server.request.LoginRequest;
+import server.request.LogoutRequest;
+import server.request.RegisterRequest;
 import service.UserService;
-import service.request.LoginRequest;
-import service.request.LogoutRequest;
-import service.request.RegisterRequest;
 import spark.Request;
 import spark.Response;
 

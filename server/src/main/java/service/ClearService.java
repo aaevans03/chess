@@ -4,7 +4,7 @@ import dataaccess.AuthDAO;
 import dataaccess.DataAccessException;
 import dataaccess.GameDAO;
 import dataaccess.UserDAO;
-import service.result.ClearResult;
+import server.result.ClearResult;
 
 public class ClearService {
 
