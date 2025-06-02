@@ -2,8 +2,13 @@ package server;
 
 import chess.ChessGame;
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import model.GameData;
+import server.request.LoginRequest;
+import server.request.LogoutRequest;
 import server.request.RegisterRequest;
+import server.result.LoginResult;
+import server.result.LogoutResult;
 import server.result.RegisterResult;
 
 import java.io.IOException;
@@ -26,27 +31,35 @@ public class ServerFacade {
     public static void main(String[] args) throws ResponseException {
         var serverFacade = new ServerFacade("http://localhost:8080");
 
-        var response = serverFacade.register("user2", "myPassword", "email@mail.net");
+        var response = serverFacade.login("username", "password");
 
-        System.out.printf("Register success:\nusername: %s\nauthToken: %s", response.username(), response.authToken());
+        System.out.printf("Success:\nusername: %s\nauthToken: %s\n", response.username(), response.authToken());
+
+        serverFacade.logout(response.authToken());
     }
 
     public AuthPair register(String username, String password, String email) throws ResponseException {
         // return username and an authToken
         var registerRequest = new RegisterRequest(username, password, email);
-        var response = makeRequest("POST", "/user", registerRequest, RegisterResult.class);
+        var response = makeRequest("POST", "/user", registerRequest, RegisterResult.class, null);
 
         assert response != null;
         return new AuthPair(response.username(), response.authToken());
     }
 
-    public AuthPair login(String username, String password) {
+    public AuthPair login(String username, String password) throws ResponseException {
         // return username and an authToken
-        return null;
+        var loginRequest = new LoginRequest(username, password);
+        var response = makeRequest("POST", "/session", loginRequest, LoginResult.class, null);
+
+        assert response != null;
+        return new AuthPair(response.username(), response.authToken());
     }
 
-    public void logout(String authToken) {
+    public void logout(String authToken) throws ResponseException {
         // logout
+        var logoutRequest = new LogoutRequest(authToken);
+        makeRequest("DELETE", "/session", logoutRequest, LogoutResult.class, authToken);
     }
 
     public ArrayList<GameData> listGames(String authToken) {
@@ -63,14 +76,14 @@ public class ServerFacade {
         // join a game
     }
 
-    private <T> T makeRequest(String method, String path, Object request, Class<T> responseClass) throws ResponseException {
+    private <T> T makeRequest(String method, String path, Object request, Class<T> responseClass, String authToken) throws ResponseException {
         try {
             URL url = (new URI(serverUrl + path)).toURL();
             HttpURLConnection http = (HttpURLConnection) url.openConnection();
             http.setRequestMethod(method);
             http.setDoOutput(true);
 
-            writeBody(request, http);
+            writeBody(request, http, authToken);
             http.connect();
 
             throwIfNotSuccessful(http);
@@ -82,10 +95,14 @@ public class ServerFacade {
         }
     }
 
-    private static void writeBody(Object request, HttpURLConnection http) throws IOException {
+    private static void writeBody(Object request, HttpURLConnection http, String authToken) throws IOException {
         if (request != null) {
+            if (authToken != null) {
+                http.addRequestProperty("authorization", authToken);
+            }
             http.addRequestProperty("Content-Type", "application/json");
-            String reqData = new Gson().toJson(request);
+            var gson = new GsonBuilder().excludeFieldsWithoutExposeAnnotation().create();
+            String reqData = gson.toJson(request);
             try (OutputStream reqBody = http.getOutputStream()) {
                 reqBody.write(reqData.getBytes());
             }

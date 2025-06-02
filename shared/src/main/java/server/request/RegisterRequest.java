@@ -1,4 +1,6 @@
 package server.request;
 
-public record RegisterRequest(String username, String password, String email) {
+import com.google.gson.annotations.Expose;
+
+public record RegisterRequest(@Expose String username, @Expose String password, @Expose String email) {
 }
