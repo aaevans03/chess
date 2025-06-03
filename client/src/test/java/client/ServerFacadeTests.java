@@ -1,17 +1,26 @@
 package client;
 
+import dataaccess.MySqlTestHelper;
 import dataaccess.mysql.MySqlAuthDAO;
 import dataaccess.mysql.MySqlGameDAO;
 import dataaccess.mysql.MySqlUserDAO;
+import model.UserData;
 import org.junit.jupiter.api.*;
+import server.ResponseException;
 import server.Server;
 import server.ServerFacade;
+
+import java.sql.SQLException;
 
 
 public class ServerFacadeTests {
 
     private static Server server;
     static ServerFacade facade;
+
+    MySqlUserDAO userDB;
+    MySqlAuthDAO authDB;
+    MySqlGameDAO gameDB;
 
     @BeforeAll
     public static void init() {
@@ -28,34 +37,67 @@ public class ServerFacadeTests {
 
     @BeforeEach
     void beforeEach() {
-        new MySqlGameDAO().clearGameData();
-        new MySqlAuthDAO().clearAuthData();
-        new MySqlUserDAO().clearUserData();
+        gameDB = new MySqlGameDAO();
+        gameDB.clearGameData();
+
+        authDB = new MySqlAuthDAO();
+        authDB.clearAuthData();
+
+        userDB = new MySqlUserDAO();
+        userDB.clearUserData();
     }
 
     @Test
-    public void sampleTest() {
-        Assertions.assertTrue(true);
+    void register() throws ResponseException, SQLException {
+        var response = facade.register("name", "password", "email@mail.net");
+
+        Assertions.assertEquals("name", response.username());
+        Assertions.assertEquals(authDB.getAuthDataWithUsername("name").authToken(), response.authToken());
+
+        var expected = new UserData("name", "password", "email@mail.net");
+        var actual = userDB.getUser("name");
+
+        MySqlTestHelper.checkUserData(expected, actual);
     }
 
     @Test
-    void register() {
+    void registerFail() throws ResponseException {
+        facade.register("player1", "password", "mail@address.com");
 
+        Assertions.assertThrows(ResponseException.class, () -> {
+            facade.register(null, null, null);
+        });
+        Assertions.assertThrows(ResponseException.class, () -> {
+            facade.register("player1", "password", "mail@address.com");
+        });
+
+        try {
+            facade.register(null, null, null);
+        } catch (ResponseException ex) {
+            Assertions.assertEquals(400, ex.getStatusCode());
+        }
+        try {
+            facade.register("player1", "password", "mail@address.com");
+        } catch (ResponseException ex) {
+            Assertions.assertEquals(403, ex.getStatusCode());
+        }
     }
 
     @Test
-    void registerFail() {
+    void login() throws ResponseException {
+        var regResponse = facade.register("player2", "password2", "mail@address.com");
+        facade.logout(regResponse.authToken());
 
-    }
+        var response = facade.login("player2", "password2");
 
-    @Test
-    void login() {
-
+        Assertions.assertTrue(response.authToken().length() > 10);
+        Assertions.assertEquals("player2", response.username());
+        Assertions.assertEquals(authDB.getAuthDataWithUsername("player2").authToken(), response.authToken());
     }
 
     @Test
     void loginFail() {
-
+        
     }
 
     @Test
@@ -95,6 +137,6 @@ public class ServerFacadeTests {
 
     @Test
     void joinFail() {
-        
+
     }
 }

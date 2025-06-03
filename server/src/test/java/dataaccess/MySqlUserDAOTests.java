@@ -8,9 +8,10 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mindrot.jbcrypt.BCrypt;
 
 import java.sql.SQLException;
+
+import static dataaccess.MySqlTestHelper.checkUserData;
 
 class MySqlUserDAOTests {
 
@@ -105,11 +106,5 @@ class MySqlUserDAOTests {
     @Test
     void getNonExistentUser() throws DataAccessException {
         Assertions.assertNull(userDB.getUser("fakeUser"));
-    }
-
-    private void checkUserData(UserData expectedUserData, UserData retrievedUserData) throws SQLException, DataAccessException {
-        Assertions.assertEquals(expectedUserData.username(), retrievedUserData.username());
-        Assertions.assertTrue(BCrypt.checkpw(expectedUserData.password(), retrievedUserData.password()));
-        Assertions.assertEquals(expectedUserData.email(), retrievedUserData.email());
     }
 }

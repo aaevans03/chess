@@ -2,6 +2,8 @@ package dataaccess;
 
 import dataaccess.mysql.MySqlUserDAO;
 import model.UserData;
+import org.junit.jupiter.api.Assertions;
+import org.mindrot.jbcrypt.BCrypt;
 
 import java.sql.SQLException;
 
@@ -26,5 +28,11 @@ public class MySqlTestHelper {
             }
         }
         return rowCount;
+    }
+
+    public static void checkUserData(UserData expectedUserData, UserData retrievedUserData) throws SQLException, DataAccessException {
+        Assertions.assertEquals(expectedUserData.username(), retrievedUserData.username());
+        Assertions.assertTrue(BCrypt.checkpw(expectedUserData.password(), retrievedUserData.password()));
+        Assertions.assertEquals(expectedUserData.email(), retrievedUserData.email());
     }
 }
