@@ -4,11 +4,13 @@ import chess.ChessGame;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import model.GameData;
+import server.request.CreateRequest;
+import server.request.JoinRequest;
 import server.request.LoginRequest;
-import server.request.LogoutRequest;
 import server.request.RegisterRequest;
+import server.result.CreateResult;
+import server.result.ListResult;
 import server.result.LoginResult;
-import server.result.LogoutResult;
 import server.result.RegisterResult;
 
 import java.io.IOException;
@@ -31,19 +33,28 @@ public class ServerFacade {
     public static void main(String[] args) throws ResponseException {
         var serverFacade = new ServerFacade("http://localhost:8080");
 
-        var response = serverFacade.login("username", "password");
+        var registerResponse = serverFacade.register("bob", "password", "email@mail.net");
+        var validAuthToken = registerResponse.authToken();
 
-        System.out.printf("Success:\nusername: %s\nauthToken: %s\n", response.username(), response.authToken());
+        System.out.println(registerResponse);
+        var loginResponse = serverFacade.login("bob", "password");
+        System.out.println(loginResponse);
+        serverFacade.logout(loginResponse.authToken());
 
-        serverFacade.logout(response.authToken());
+        System.out.println(serverFacade.create(validAuthToken, "game1"));
+        System.out.println(serverFacade.create(validAuthToken, "game2"));
+        System.out.println(serverFacade.create(validAuthToken, "game3"));
+
+        serverFacade.join(validAuthToken, ChessGame.TeamColor.WHITE, 1);
+        serverFacade.join(validAuthToken, ChessGame.TeamColor.BLACK, 2);
+        serverFacade.join(validAuthToken, ChessGame.TeamColor.WHITE, 3);
+        System.out.println(serverFacade.listGames(validAuthToken));
     }
 
     public AuthPair register(String username, String password, String email) throws ResponseException {
         // return username and an authToken
         var registerRequest = new RegisterRequest(username, password, email);
         var response = makeRequest("POST", "/user", registerRequest, RegisterResult.class, null);
-
-        assert response != null;
         return new AuthPair(response.username(), response.authToken());
     }
 
@@ -51,29 +62,29 @@ public class ServerFacade {
         // return username and an authToken
         var loginRequest = new LoginRequest(username, password);
         var response = makeRequest("POST", "/session", loginRequest, LoginResult.class, null);
-
-        assert response != null;
         return new AuthPair(response.username(), response.authToken());
     }
 
     public void logout(String authToken) throws ResponseException {
-        // logout
-        var logoutRequest = new LogoutRequest(authToken);
-        makeRequest("DELETE", "/session", logoutRequest, LogoutResult.class, authToken);
+        makeRequest("DELETE", "/session", null, null, authToken);
     }
 
-    public ArrayList<GameData> listGames(String authToken) {
-        // return list of games
-        return null;
+    public ArrayList<GameData> listGames(String authToken) throws ResponseException {
+        var response = makeRequest("GET", "/game", null, ListResult.class, authToken);
+        return response.games();
     }
 
-    public int create(String authToken, String gameName) {
+    public int create(String authToken, String gameName) throws ResponseException {
         // return game ID
-        return 1;
+        var createRequest = new CreateRequest(authToken, gameName);
+        var response = makeRequest("POST", "/game", createRequest, CreateResult.class, authToken);
+        return response.gameID();
     }
 
-    public void join(String authToken, ChessGame.TeamColor playerColor, int gameID) {
+    public void join(String authToken, ChessGame.TeamColor playerColor, int gameID) throws ResponseException {
         // join a game
+        var joinRequest = new JoinRequest(authToken, playerColor, gameID);
+        makeRequest("PUT", "/game", joinRequest, null, authToken);
     }
 
     private <T> T makeRequest(String method, String path, Object request, Class<T> responseClass, String authToken) throws ResponseException {
@@ -96,10 +107,11 @@ public class ServerFacade {
     }
 
     private static void writeBody(Object request, HttpURLConnection http, String authToken) throws IOException {
+        // put authToken in header
+        if (authToken != null) {
+            http.addRequestProperty("authorization", authToken);
+        }
         if (request != null) {
-            if (authToken != null) {
-                http.addRequestProperty("authorization", authToken);
-            }
             http.addRequestProperty("Content-Type", "application/json");
             var gson = new GsonBuilder().excludeFieldsWithoutExposeAnnotation().create();
             String reqData = gson.toJson(request);
