@@ -22,7 +22,7 @@ public class Repl {
 
             try {
                 result = client.evaluateCommand(line);
-                System.out.print(SET_TEXT_COLOR_RED + "   " + result);
+                System.out.print(result);
             } catch (Throwable e) {
                 System.out.print(e.toString());
             }
