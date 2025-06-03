@@ -20,11 +20,11 @@ public class Repl {
             printPrompt();
             String line = scanner.nextLine();
 
-            result = line;
-            if (result.equals("quit")) {
-                System.out.print(SET_TEXT_COLOR_RED + "    Goodbye!");
-            } else {
-                System.out.print(SET_TEXT_COLOR_RED + "    " + line);
+            try {
+                result = client.evaluateCommand(line);
+                System.out.print(SET_TEXT_COLOR_RED + "   " + result);
+            } catch (Throwable e) {
+                System.out.print(e.toString());
             }
         }
     }
