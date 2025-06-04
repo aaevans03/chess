@@ -1,5 +1,6 @@
 package ui;
 
+import model.GameData;
 import server.ResponseException;
 import server.ServerFacade;
 
@@ -89,7 +90,8 @@ public class ChessClient {
     private String postLogin(String cmd, String[] params) throws ResponseException {
         return switch (cmd) {
             case "create", "c" -> create(params);
-            case "logout", "l" -> logout(params);
+            case "list", "l" -> list(params);
+            case "logout", "log" -> logout(params);
             case "quit", "q" -> "quit";
             default -> help();
         };
@@ -122,6 +124,65 @@ public class ChessClient {
             return String.format("Game successfully created with ID %s", gameId);
         }
         throw new ResponseException(400, syntaxErrorFormatter(CommandSyntax.CREATE));
+    }
+
+    /**
+     * Retrieve list of games from the database and number them in the client.
+     *
+     * @param params If any parameters are provided, it's invalid input
+     * @return
+     * @throws ResponseException
+     */
+    private String list(String... params) throws ResponseException {
+        if (params.length == 0) {
+
+            var response = server.listGames(currentAuthToken);
+
+            if (response.isEmpty()) {
+                return "No games active, create one of your own!";
+            }
+
+//            System.out.println(SET_TEXT_COLOR_RED + "got " + response.size() + " games from server" + RESET_TEXT_COLOR);
+
+            // Map games previously not stored in client to new IDs
+            var responseMap = new HashMap<Integer, GameData>();
+            for (var responseItem : response) {
+                responseMap.put(responseItem.gameID(), responseItem);
+
+                // Assign new client IDs to the returned server IDs
+                if (!gameMap.containsValue(responseItem.gameID())) {
+//                    System.out.println(SET_TEXT_COLOR_RED + "put server game ID " + responseItem.gameID() + " in as " + gameIterator + RESET_TEXT_COLOR);
+                    gameMap.put(gameIterator, responseItem.gameID());
+                    gameIterator++;
+                }
+            }
+
+            // Write output
+            StringBuilder output = new StringBuilder();
+
+            for (int i = 1; i <= gameMap.size(); i++) {
+                var dbGameID = gameMap.get(i);
+
+                output.append("   ID: ");
+                output.append(SET_TEXT_COLOR_BLUE).append(i);
+
+                output.append(RESET_TEXT_COLOR + ", Game Name: ");
+                output.append(SET_TEXT_COLOR_BLUE).append(responseMap.get(dbGameID).gameName());
+
+                var whiteUsername = responseMap.get(dbGameID).whiteUsername();
+                output.append(RESET_TEXT_COLOR + ", White: ");
+                output.append(SET_TEXT_COLOR_BLUE).append(whiteUsername == null ? "none" : whiteUsername);
+
+                var blackUsername = responseMap.get(dbGameID).whiteUsername();
+                output.append(RESET_TEXT_COLOR + ", Black: ");
+                output.append(SET_TEXT_COLOR_BLUE).append(blackUsername == null ? "none" : blackUsername);
+
+                output.append(RESET_TEXT_COLOR + "\n");
+            }
+
+            return output.toString();
+        }
+        throw new ResponseException(400, syntaxErrorFormatter(CommandSyntax.LIST));
     }
 
     private String gameplay(String cmd, String[] params) {
