@@ -205,8 +205,10 @@ public class ChessClient {
             try {
                 id = Integer.parseInt(params[0]);
                 serverGameId = gameMap.get(id);
-            } catch (NumberFormatException | NullPointerException ex) {
+            } catch (NumberFormatException ex) {
                 throw new ResponseException(400, "Invalid game ID entered, try again.");
+            } catch (NullPointerException ex) {
+                throw new ResponseException(400, "Game does not exist, try again.");
             }
 
             var color = params[1];
