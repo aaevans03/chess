@@ -1,5 +1,6 @@
 package ui;
 
+import chess.ChessBoard;
 import chess.ChessGame;
 import model.GameData;
 import server.ResponseException;
@@ -169,15 +170,18 @@ public class ChessClient {
                 output.append(RESET_TEXT_BOLD_FAINT + SET_TEXT_COLOR_BLUE).append(i);
 
                 output.append(RESET_TEXT_COLOR + SET_TEXT_BOLD + ", Game Name: ");
-                output.append(RESET_TEXT_BOLD_FAINT + SET_TEXT_COLOR_BLUE).append(responseMap.get(dbGameID).gameName());
+                output.append(RESET_TEXT_BOLD_FAINT + SET_TEXT_COLOR_BLUE)
+                        .append(responseMap.get(dbGameID).gameName());
 
                 var whiteUsername = responseMap.get(dbGameID).whiteUsername();
                 output.append(RESET_TEXT_COLOR + SET_TEXT_BOLD + ", White: ");
-                output.append(RESET_TEXT_BOLD_FAINT + SET_TEXT_COLOR_BLUE).append(whiteUsername == null ? "none" : whiteUsername);
+                output.append(RESET_TEXT_BOLD_FAINT + SET_TEXT_COLOR_BLUE)
+                        .append(whiteUsername == null ? "none" : whiteUsername);
 
                 var blackUsername = responseMap.get(dbGameID).blackUsername();
                 output.append(RESET_TEXT_COLOR + SET_TEXT_BOLD + ", Black: ");
-                output.append(RESET_TEXT_BOLD_FAINT + SET_TEXT_COLOR_BLUE).append(blackUsername == null ? "none" : blackUsername);
+                output.append(RESET_TEXT_BOLD_FAINT + SET_TEXT_COLOR_BLUE)
+                        .append(blackUsername == null ? "none" : blackUsername);
 
                 output.append(RESET_TEXT_COLOR + "\n");
             }
@@ -201,17 +205,28 @@ public class ChessClient {
                 throw new ResponseException(400, "Invalid game ID entered, try again.");
             }
 
+            ChessGame.TeamColor teamColor;
+
             // Join the game
-            if (Objects.equals(color, "white") || Objects.equals(color, "w") || Objects.equals(color, "WHITE")) {
-                server.join(currentAuthToken, ChessGame.TeamColor.WHITE, serverGameId);
-            } else if (Objects.equals(color, "black") || Objects.equals(color, "b") || Objects.equals(color, "BLACK")) {
-                server.join(currentAuthToken, ChessGame.TeamColor.BLACK, serverGameId);
+            if (Objects.equals(color, "white") || Objects.equals(color, "w")
+                    || Objects.equals(color, "WHITE")) {
+                teamColor = ChessGame.TeamColor.WHITE;
+            } else if (Objects.equals(color, "black") || Objects.equals(color, "b")
+                    || Objects.equals(color, "BLACK")) {
+                teamColor = ChessGame.TeamColor.BLACK;
             } else {
                 throw new ResponseException(400, syntaxErrorFormatter(CommandSyntax.JOIN));
             }
 
+            server.join(currentAuthToken, teamColor, serverGameId);
             clientState = ClientState.GAMEPLAY;
-            return String.format(SET_TEXT_COLOR_BLUE + "  Joined game %d. [draw board]", id);
+
+            var board = new ChessBoard();
+            board.resetBoard();
+
+            var drawnBoard = new BoardDrawer().drawBoard(teamColor, board);
+
+            return String.format(SET_TEXT_COLOR_BLUE + "  Joined game %d.\n\n%s", id, drawnBoard);
         }
 
         throw new ResponseException(400, syntaxErrorFormatter(CommandSyntax.JOIN));
@@ -219,7 +234,7 @@ public class ChessClient {
 
     private String gameplay(String cmd, String[] params) throws ResponseException {
         return switch (cmd) {
-            case "exit" -> exit(params);
+            case "exit", "e" -> exit(params);
             default -> CommandSyntax.help(ClientState.GAMEPLAY);
         };
     }
