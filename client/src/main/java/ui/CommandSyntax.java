@@ -1,7 +1,9 @@
 package ui;
 
+import static ui.EscapeSequences.*;
+
 /**
- * Class for storing the syntax of different ChessClient commands.
+ * Class for storing the syntax of different ChessClient commands, as well as the help command.
  */
 public class CommandSyntax {
 
@@ -17,4 +19,45 @@ public class CommandSyntax {
     public static final String LOGOUT = "logout";
 
     public static final String EXIT = "exit";
+
+    public static String help(ClientState clientState) {
+        var output = new StringBuilder();
+
+        switch (clientState) {
+            case PRE_LOGIN -> {
+                output.append(SET_TEXT_COLOR_MAGENTA + "  " + CommandSyntax.REGISTER);
+                output.append(SET_TEXT_COLOR_LIGHT_GREY + " - create a new account\n");
+                output.append(SET_TEXT_COLOR_MAGENTA + "  " + CommandSyntax.LOGIN);
+                output.append(SET_TEXT_COLOR_LIGHT_GREY + " - login with an existing account\n");
+                output.append(SET_TEXT_COLOR_MAGENTA + "  " + CommandSyntax.QUIT);
+                output.append(SET_TEXT_COLOR_LIGHT_GREY + " - quit the program\n");
+                output.append(SET_TEXT_COLOR_MAGENTA + "  " + CommandSyntax.HELP);
+                output.append(SET_TEXT_COLOR_LIGHT_GREY + " - display list of commands\n");
+            }
+            case POST_LOGIN -> {
+                output.append(SET_TEXT_COLOR_MAGENTA + "  " + CommandSyntax.CREATE);
+                output.append(SET_TEXT_COLOR_LIGHT_GREY + " - create a new chess game with specified name\n");
+                output.append(SET_TEXT_COLOR_MAGENTA + "  " + CommandSyntax.LIST);
+                output.append(SET_TEXT_COLOR_LIGHT_GREY + " - view list of games\n");
+                output.append(SET_TEXT_COLOR_MAGENTA + "  " + CommandSyntax.JOIN);
+                output.append(SET_TEXT_COLOR_LIGHT_GREY + " - join a game as specified color\n");
+                output.append(SET_TEXT_COLOR_MAGENTA + "  " + CommandSyntax.OBSERVE);
+                output.append(SET_TEXT_COLOR_LIGHT_GREY + " - observe a game\n");
+                output.append(SET_TEXT_COLOR_MAGENTA + "  " + CommandSyntax.LOGOUT);
+                output.append(SET_TEXT_COLOR_LIGHT_GREY + " - log out of chess\n");
+                output.append(SET_TEXT_COLOR_MAGENTA + "  " + CommandSyntax.QUIT);
+                output.append(SET_TEXT_COLOR_LIGHT_GREY + " - quit the program\n");
+                output.append(SET_TEXT_COLOR_MAGENTA + "  " + CommandSyntax.HELP);
+                output.append(SET_TEXT_COLOR_LIGHT_GREY + " - display list of commands\n");
+            }
+            case GAMEPLAY -> {
+                output.append("  " + SET_TEXT_UNDERLINE + "Full game implementation coming soon! Current commands");
+                output.append(RESET_TEXT_UNDERLINE + ":\n");
+                output.append(SET_TEXT_COLOR_MAGENTA + "  " + CommandSyntax.EXIT);
+                output.append(SET_TEXT_COLOR_LIGHT_GREY + " - exit current game\n");
+            }
+        }
+
+        return output.toString();
+    }
 }

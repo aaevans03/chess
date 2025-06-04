@@ -47,7 +47,7 @@ public class ChessClient {
             case "register", "r" -> register(params);
             case "login", "l" -> login(params);
             case "quit", "q" -> "quit";
-            default -> help();
+            default -> CommandSyntax.help(ClientState.PRE_LOGIN);
         };
     }
 
@@ -96,7 +96,7 @@ public class ChessClient {
             case "join", "j" -> join(params);
             case "logout", "log" -> logout(params);
             case "quit", "q" -> "quit";
-            default -> help();
+            default -> CommandSyntax.help(ClientState.POST_LOGIN);
         };
     }
 
@@ -213,14 +213,14 @@ public class ChessClient {
             clientState = ClientState.GAMEPLAY;
             return String.format(SET_TEXT_COLOR_BLUE + "  Joined game %d. [draw board]", id);
         }
-        
+
         throw new ResponseException(400, syntaxErrorFormatter(CommandSyntax.JOIN));
     }
 
     private String gameplay(String cmd, String[] params) throws ResponseException {
         return switch (cmd) {
             case "exit" -> exit(params);
-            default -> help();
+            default -> CommandSyntax.help(ClientState.GAMEPLAY);
         };
     }
 
@@ -230,47 +230,6 @@ public class ChessClient {
             return SET_TEXT_COLOR_BLUE + "  Exited game.";
         }
         throw new ResponseException(400, syntaxErrorFormatter(CommandSyntax.EXIT));
-    }
-
-    private String help() {
-        var output = "";
-
-        switch (clientState) {
-            case PRE_LOGIN -> {
-                output += SET_TEXT_COLOR_MAGENTA + "  " + CommandSyntax.REGISTER;
-                output += SET_TEXT_COLOR_LIGHT_GREY + " - create a new account\n";
-                output += SET_TEXT_COLOR_MAGENTA + "  " + CommandSyntax.LOGIN;
-                output += SET_TEXT_COLOR_LIGHT_GREY + " - login with an existing account\n";
-                output += SET_TEXT_COLOR_MAGENTA + "  " + CommandSyntax.QUIT;
-                output += SET_TEXT_COLOR_LIGHT_GREY + " - quit the program\n";
-                output += SET_TEXT_COLOR_MAGENTA + "  " + CommandSyntax.HELP;
-                output += SET_TEXT_COLOR_LIGHT_GREY + " - display list of commands\n";
-            }
-            case POST_LOGIN -> {
-                output += SET_TEXT_COLOR_MAGENTA + "  " + CommandSyntax.CREATE;
-                output += SET_TEXT_COLOR_LIGHT_GREY + " - create a new chess game with specified name\n";
-                output += SET_TEXT_COLOR_MAGENTA + "  " + CommandSyntax.LIST;
-                output += SET_TEXT_COLOR_LIGHT_GREY + " - view list of games\n";
-                output += SET_TEXT_COLOR_MAGENTA + "  " + CommandSyntax.JOIN;
-                output += SET_TEXT_COLOR_LIGHT_GREY + " - join a game as specified color\n";
-                output += SET_TEXT_COLOR_MAGENTA + "  " + CommandSyntax.OBSERVE;
-                output += SET_TEXT_COLOR_LIGHT_GREY + " - observe a game\n";
-                output += SET_TEXT_COLOR_MAGENTA + "  " + CommandSyntax.LOGOUT;
-                output += SET_TEXT_COLOR_LIGHT_GREY + " - log out of chess\n";
-                output += SET_TEXT_COLOR_MAGENTA + "  " + CommandSyntax.QUIT;
-                output += SET_TEXT_COLOR_LIGHT_GREY + " - quit the program\n";
-                output += SET_TEXT_COLOR_MAGENTA + "  " + CommandSyntax.HELP;
-                output += SET_TEXT_COLOR_LIGHT_GREY + " - display list of commands\n";
-            }
-            case GAMEPLAY -> {
-                output += "  " + SET_TEXT_UNDERLINE + "Full game implementation coming soon! Current commands";
-                output += RESET_TEXT_UNDERLINE + ":\n";
-                output += SET_TEXT_COLOR_MAGENTA + "  " + CommandSyntax.EXIT;
-                output += SET_TEXT_COLOR_LIGHT_GREY + " - exit current game\n";
-            }
-        }
-
-        return output;
     }
 
     private String syntaxErrorFormatter(String message) {
