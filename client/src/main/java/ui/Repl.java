@@ -16,7 +16,7 @@ public class Repl {
 
         Scanner scanner = new Scanner(System.in);
         var result = "";
-        while (!result.equals("quit")) {
+        while (!result.equals(SET_TEXT_COLOR_MAGENTA + "  Have a nice day!")) {
             printPrompt();
             String line = scanner.nextLine();
 
@@ -24,7 +24,7 @@ public class Repl {
                 result = client.evaluateCommand(line);
                 System.out.print(result);
             } catch (Throwable e) {
-                System.out.print(SET_TEXT_COLOR_RED + "  Error: " + e.toString());
+                System.out.print(SET_TEXT_COLOR_RED + "  Error: " + e);
             }
         }
     }

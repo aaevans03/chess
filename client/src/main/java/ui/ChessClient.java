@@ -47,7 +47,7 @@ public class ChessClient {
         return switch (cmd) {
             case "register", "r" -> register(params);
             case "login", "l" -> login(params);
-            case "quit", "q" -> "quit";
+            case "quit", "q" -> SET_TEXT_COLOR_MAGENTA + "  Have a nice day!";
             case "help", "h" -> CommandSyntax.help(ClientState.PRE_LOGIN);
             default -> SET_TEXT_COLOR_RED + "  Unknown command. List of valid commands:\n"
                     + CommandSyntax.help(ClientState.PRE_LOGIN);
@@ -99,7 +99,7 @@ public class ChessClient {
             case "join", "j" -> join(params);
             case "observe", "o" -> observe(params);
             case "logout", "log" -> logout(params);
-            case "quit", "q" -> "quit";
+            case "quit", "q" -> SET_TEXT_COLOR_MAGENTA + "  Have a nice day!";
             case "help", "h" -> CommandSyntax.help(ClientState.POST_LOGIN);
             default -> SET_TEXT_COLOR_RED + "  Unknown command. List of valid commands:\n"
                     + CommandSyntax.help(ClientState.POST_LOGIN);
