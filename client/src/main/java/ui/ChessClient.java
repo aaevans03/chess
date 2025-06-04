@@ -1,11 +1,13 @@
 package ui;
 
+import chess.ChessGame;
 import model.GameData;
 import server.ResponseException;
 import server.ServerFacade;
 
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Objects;
 
 import static ui.EscapeSequences.*;
 
@@ -16,7 +18,7 @@ public class ChessClient {
     private String currentAuthToken = null;
     private ClientState clientState = ClientState.PRE_LOGIN;
     private int gameIterator = 1;
-    private HashMap<Integer, Integer> gameMap;
+    private final HashMap<Integer, Integer> gameMap;
 
     public ChessClient(String serverUrl) {
         server = new ServerFacade(serverUrl);
@@ -26,7 +28,7 @@ public class ChessClient {
 
     public String evaluateCommand(String input) {
         try {
-            var tokens = input.toLowerCase().split(" ");
+            var tokens = input.split(" ");
             var cmd = (tokens.length > 0) ? tokens[0] : "help";
             var params = Arrays.copyOfRange(tokens, 1, tokens.length);
 
@@ -66,7 +68,7 @@ public class ChessClient {
             currentAuthToken = result.authToken();
 
             clientState = ClientState.POST_LOGIN;
-            return String.format("Welcome to chess, %s!", currentUsername);
+            return String.format(SET_TEXT_COLOR_BLUE + "  Welcome to chess, %s!", currentUsername);
         }
         throw new ResponseException(400, syntaxErrorFormatter(CommandSyntax.REGISTER));
     }
@@ -82,7 +84,7 @@ public class ChessClient {
             currentAuthToken = result.authToken();
 
             clientState = ClientState.POST_LOGIN;
-            return String.format("Welcome back to chess, %s!", currentUsername);
+            return String.format(SET_TEXT_COLOR_BLUE + "  Welcome back to chess, %s!", currentUsername);
         }
         throw new ResponseException(400, syntaxErrorFormatter(CommandSyntax.LOGIN));
     }
@@ -91,6 +93,7 @@ public class ChessClient {
         return switch (cmd) {
             case "create", "c" -> create(params);
             case "list", "l" -> list(params);
+            case "join", "j" -> join(params);
             case "logout", "log" -> logout(params);
             case "quit", "q" -> "quit";
             default -> help();
@@ -106,7 +109,7 @@ public class ChessClient {
 
             clientState = ClientState.PRE_LOGIN;
 
-            return "Successfully logged out";
+            return SET_TEXT_COLOR_BLUE + "  Successfully logged out";
         }
         throw new ResponseException(400, syntaxErrorFormatter(CommandSyntax.LOGOUT));
     }
@@ -121,7 +124,7 @@ public class ChessClient {
             var gameId = gameIterator;
             gameIterator++;
 
-            return String.format("Game successfully created with ID %s", gameId);
+            return String.format(SET_TEXT_COLOR_BLUE + "  Game successfully created with ID %s", gameId);
         }
         throw new ResponseException(400, syntaxErrorFormatter(CommandSyntax.CREATE));
     }
@@ -139,10 +142,10 @@ public class ChessClient {
             var response = server.listGames(currentAuthToken);
 
             if (response.isEmpty()) {
-                return "No games active, create one of your own!";
+                gameMap.clear();
+                gameIterator = 1;
+                return SET_TEXT_COLOR_BLUE + "  No games active, create one of your own!";
             }
-
-//            System.out.println(SET_TEXT_COLOR_RED + "got " + response.size() + " games from server" + RESET_TEXT_COLOR);
 
             // Map games previously not stored in client to new IDs
             var responseMap = new HashMap<Integer, GameData>();
@@ -151,7 +154,6 @@ public class ChessClient {
 
                 // Assign new client IDs to the returned server IDs
                 if (!gameMap.containsValue(responseItem.gameID())) {
-//                    System.out.println(SET_TEXT_COLOR_RED + "put server game ID " + responseItem.gameID() + " in as " + gameIterator + RESET_TEXT_COLOR);
                     gameMap.put(gameIterator, responseItem.gameID());
                     gameIterator++;
                 }
@@ -163,19 +165,19 @@ public class ChessClient {
             for (int i = 1; i <= gameMap.size(); i++) {
                 var dbGameID = gameMap.get(i);
 
-                output.append("   ID: ");
-                output.append(SET_TEXT_COLOR_BLUE).append(i);
+                output.append(SET_TEXT_BOLD + "   ID: ");
+                output.append(RESET_TEXT_BOLD_FAINT + SET_TEXT_COLOR_BLUE).append(i);
 
-                output.append(RESET_TEXT_COLOR + ", Game Name: ");
-                output.append(SET_TEXT_COLOR_BLUE).append(responseMap.get(dbGameID).gameName());
+                output.append(RESET_TEXT_COLOR + SET_TEXT_BOLD + ", Game Name: ");
+                output.append(RESET_TEXT_BOLD_FAINT + SET_TEXT_COLOR_BLUE).append(responseMap.get(dbGameID).gameName());
 
                 var whiteUsername = responseMap.get(dbGameID).whiteUsername();
-                output.append(RESET_TEXT_COLOR + ", White: ");
-                output.append(SET_TEXT_COLOR_BLUE).append(whiteUsername == null ? "none" : whiteUsername);
+                output.append(RESET_TEXT_COLOR + SET_TEXT_BOLD + ", White: ");
+                output.append(RESET_TEXT_BOLD_FAINT + SET_TEXT_COLOR_BLUE).append(whiteUsername == null ? "none" : whiteUsername);
 
-                var blackUsername = responseMap.get(dbGameID).whiteUsername();
-                output.append(RESET_TEXT_COLOR + ", Black: ");
-                output.append(SET_TEXT_COLOR_BLUE).append(blackUsername == null ? "none" : blackUsername);
+                var blackUsername = responseMap.get(dbGameID).blackUsername();
+                output.append(RESET_TEXT_COLOR + SET_TEXT_BOLD + ", Black: ");
+                output.append(RESET_TEXT_BOLD_FAINT + SET_TEXT_COLOR_BLUE).append(blackUsername == null ? "none" : blackUsername);
 
                 output.append(RESET_TEXT_COLOR + "\n");
             }
@@ -185,11 +187,49 @@ public class ChessClient {
         throw new ResponseException(400, syntaxErrorFormatter(CommandSyntax.LIST));
     }
 
-    private String gameplay(String cmd, String[] params) {
+    private String join(String... params) throws ResponseException {
+        if (params.length == 2) {
+            var id = Integer.parseInt(params[0]);
+            var color = params[1];
+
+            int serverGameId;
+
+            // User joins a game that does not exist
+            try {
+                serverGameId = gameMap.get(id);
+            } catch (NullPointerException ex) {
+                throw new ResponseException(400, "Invalid game ID entered, try again.");
+            }
+
+            // Join the game
+            if (Objects.equals(color, "white") || Objects.equals(color, "w") || Objects.equals(color, "WHITE")) {
+                server.join(currentAuthToken, ChessGame.TeamColor.WHITE, serverGameId);
+            } else if (Objects.equals(color, "black") || Objects.equals(color, "b") || Objects.equals(color, "BLACK")) {
+                server.join(currentAuthToken, ChessGame.TeamColor.BLACK, serverGameId);
+            } else {
+                throw new ResponseException(400, syntaxErrorFormatter(CommandSyntax.JOIN));
+            }
+
+            clientState = ClientState.GAMEPLAY;
+            return String.format(SET_TEXT_COLOR_BLUE + "  Joined game %d. [draw board]", id);
+        }
+        
+        throw new ResponseException(400, syntaxErrorFormatter(CommandSyntax.JOIN));
+    }
+
+    private String gameplay(String cmd, String[] params) throws ResponseException {
         return switch (cmd) {
-            case "exit" -> "exit";
+            case "exit" -> exit(params);
             default -> help();
         };
+    }
+
+    private String exit(String... params) throws ResponseException {
+        if (params.length == 0) {
+            clientState = ClientState.POST_LOGIN;
+            return SET_TEXT_COLOR_BLUE + "  Exited game.";
+        }
+        throw new ResponseException(400, syntaxErrorFormatter(CommandSyntax.EXIT));
     }
 
     private String help() {
@@ -223,6 +263,8 @@ public class ChessClient {
                 output += SET_TEXT_COLOR_LIGHT_GREY + " - display list of commands\n";
             }
             case GAMEPLAY -> {
+                output += "  " + SET_TEXT_UNDERLINE + "Full game implementation coming soon! Current commands";
+                output += RESET_TEXT_UNDERLINE + ":\n";
                 output += SET_TEXT_COLOR_MAGENTA + "  " + CommandSyntax.EXIT;
                 output += SET_TEXT_COLOR_LIGHT_GREY + " - exit current game\n";
             }
