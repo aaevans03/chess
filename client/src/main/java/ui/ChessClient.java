@@ -4,6 +4,7 @@ import server.ResponseException;
 import server.ServerFacade;
 
 import java.util.Arrays;
+import java.util.HashMap;
 
 import static ui.EscapeSequences.*;
 
@@ -11,8 +12,10 @@ public class ChessClient {
     private final ServerFacade server;
     private final String serverUrl;
     private String currentUsername = null;
-    private String authToken = null;
+    private String currentAuthToken = null;
     private ClientState clientState = ClientState.PRE_LOGIN;
+    private int gameIterator = 1;
+    private HashMap<Integer, Integer> gameMap;
 
     public ChessClient(String serverUrl) {
         server = new ServerFacade(serverUrl);
@@ -44,8 +47,9 @@ public class ChessClient {
         };
     }
 
-    private String postLogin(String cmd, String[] params) {
+    private String postLogin(String cmd, String[] params) throws ResponseException {
         return switch (cmd) {
+            case "logout", "l" -> logout(params);
             default -> help();
         };
     }
@@ -71,12 +75,12 @@ public class ChessClient {
             var result = server.register(username, password, email);
 
             currentUsername = result.username();
-            authToken = result.authToken();
+            currentAuthToken = result.authToken();
 
             clientState = ClientState.POST_LOGIN;
             return String.format("Welcome to chess, %s!", currentUsername);
         }
-        throw new ResponseException(400, SET_TEXT_UNDERLINE + "Expected" + RESET_TEXT_UNDERLINE + ": register <USERNAME> <PASSWORD> <EMAIL>");
+        throw new ResponseException(400, syntaxErrorFormatter("register <USERNAME> <PASSWORD> <EMAIL>"));
     }
 
     private String login(String... params) throws ResponseException {
@@ -87,12 +91,26 @@ public class ChessClient {
             var result = server.login(username, password);
 
             currentUsername = result.username();
-            authToken = result.authToken();
+            currentAuthToken = result.authToken();
 
             clientState = ClientState.POST_LOGIN;
             return String.format("Welcome back to chess, %s!", currentUsername);
         }
-        throw new ResponseException(400, SET_TEXT_UNDERLINE + "Expected" + RESET_TEXT_UNDERLINE + ": login <USERNAME> <PASSWORD>");
+        throw new ResponseException(400, syntaxErrorFormatter("login <USERNAME> <PASSWORD>"));
+    }
+
+    private String logout(String... params) throws ResponseException {
+        if (params.length == 0) {
+            server.logout(currentAuthToken);
+
+            currentAuthToken = null;
+            currentUsername = null;
+
+            clientState = ClientState.PRE_LOGIN;
+
+            return "Successfully logged out";
+        }
+        throw new ResponseException(400, syntaxErrorFormatter("logout"));
     }
 
     public String help() {
@@ -118,6 +136,10 @@ public class ChessClient {
         }
 
         return output;
+    }
+
+    private String syntaxErrorFormatter(String message) {
+        return SET_TEXT_UNDERLINE + "Expected" + RESET_TEXT_UNDERLINE + ": " + message;
     }
 
     public String getCurrentUsername() {
