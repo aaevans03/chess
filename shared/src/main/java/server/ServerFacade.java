@@ -8,10 +8,7 @@ import server.request.CreateRequest;
 import server.request.JoinRequest;
 import server.request.LoginRequest;
 import server.request.RegisterRequest;
-import server.result.CreateResult;
-import server.result.ListResult;
-import server.result.LoginResult;
-import server.result.RegisterResult;
+import server.result.*;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -85,6 +82,11 @@ public class ServerFacade {
         // join a game
         var joinRequest = new JoinRequest(authToken, playerColor, gameID);
         makeRequest("PUT", "/game", joinRequest, null, authToken);
+    }
+
+    public void clear() throws ResponseException {
+        // clear all data from DB
+        makeRequest("DELETE", "/db", null, ClearResult.class, null);
     }
 
     private <T> T makeRequest(String method, String path, Object request, Class<T> responseClass, String authToken) throws ResponseException {
