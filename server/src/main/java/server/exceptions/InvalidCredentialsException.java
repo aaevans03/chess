@@ -5,7 +5,7 @@ import spark.Response;
 
 public class InvalidCredentialsException extends RuntimeException {
     public InvalidCredentialsException() {
-        super("unauthorized");
+        super("unauthorized, check credentials and try again.");
     }
 
     public static void errorHandler(Exception e, Request req, Response res) {

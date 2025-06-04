@@ -92,14 +92,14 @@ public class GameService {
             case WHITE -> {
                 // 403, game already taken
                 if (game.whiteUsername() != null) {
-                    throw new AlreadyTakenException("game slot already taken");
+                    throw new AlreadyTakenException("game slot already taken.");
                 }
                 gameDB.updateGame(gameID, authData.username(), ChessGame.TeamColor.WHITE, null);
             }
             case BLACK -> {
                 // 403, game already taken
                 if (game.blackUsername() != null) {
-                    throw new AlreadyTakenException("game slot already taken");
+                    throw new AlreadyTakenException("game slot already taken.");
                 }
                 gameDB.updateGame(gameID, authData.username(), ChessGame.TeamColor.BLACK, null);
             }

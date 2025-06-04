@@ -5,7 +5,7 @@ import spark.Response;
 
 public class InvalidInputException extends ServerException {
     public InvalidInputException() {
-        super("bad request");
+        super("bad request.");
     }
 
     public static void errorHandler(Exception e, Request req, Response res) {

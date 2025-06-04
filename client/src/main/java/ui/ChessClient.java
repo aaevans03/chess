@@ -48,7 +48,9 @@ public class ChessClient {
             case "register", "r" -> register(params);
             case "login", "l" -> login(params);
             case "quit", "q" -> "quit";
-            default -> CommandSyntax.help(ClientState.PRE_LOGIN);
+            case "help", "h" -> CommandSyntax.help(ClientState.PRE_LOGIN);
+            default -> SET_TEXT_COLOR_RED + "  Unknown command. List of valid commands:\n"
+                    + CommandSyntax.help(ClientState.PRE_LOGIN);
         };
     }
 
@@ -98,7 +100,9 @@ public class ChessClient {
             case "observe", "o" -> observe(params);
             case "logout", "log" -> logout(params);
             case "quit", "q" -> "quit";
-            default -> CommandSyntax.help(ClientState.POST_LOGIN);
+            case "help", "h" -> CommandSyntax.help(ClientState.POST_LOGIN);
+            default -> SET_TEXT_COLOR_RED + "  Unknown command. List of valid commands:\n"
+                    + CommandSyntax.help(ClientState.POST_LOGIN);
         };
     }
 
@@ -262,7 +266,9 @@ public class ChessClient {
     private String gameplay(String cmd, String[] params) throws ResponseException {
         return switch (cmd) {
             case "exit", "e" -> exit(params);
-            default -> CommandSyntax.help(ClientState.GAMEPLAY);
+            case "help", "h" -> CommandSyntax.help(ClientState.GAMEPLAY);
+            default -> SET_TEXT_COLOR_RED + "  Unknown command. List of valid commands:\n"
+                    + CommandSyntax.help(ClientState.GAMEPLAY);
         };
     }
 

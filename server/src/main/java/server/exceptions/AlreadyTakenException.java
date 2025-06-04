@@ -5,7 +5,7 @@ import spark.Response;
 
 public class AlreadyTakenException extends ServerException {
     public AlreadyTakenException() {
-        super("username already taken");
+        super("username already taken.");
     }
 
     public AlreadyTakenException(String msg) {
