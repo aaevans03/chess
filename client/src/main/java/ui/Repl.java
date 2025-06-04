@@ -24,14 +24,14 @@ public class Repl {
                 result = client.evaluateCommand(line);
                 System.out.print(result);
             } catch (Throwable e) {
-                System.out.print(e.toString());
+                System.out.print(SET_TEXT_COLOR_RED + "  Error: " + e.toString());
             }
         }
     }
 
     private void printPrompt() {
         resetTextFormatting();
-        var username = client.getUsername();
+        var username = client.getCurrentUsername();
         System.out.print("\n[" + (username == null ? "UNKNOWN_USER" : username) + "] ");
         System.out.print(">>> ");
     }

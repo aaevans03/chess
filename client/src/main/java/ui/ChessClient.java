@@ -5,13 +5,13 @@ import server.ServerFacade;
 
 import java.util.Arrays;
 
-import static ui.EscapeSequences.SET_TEXT_COLOR_LIGHT_GREY;
-import static ui.EscapeSequences.SET_TEXT_COLOR_MAGENTA;
+import static ui.EscapeSequences.*;
 
 public class ChessClient {
     private final ServerFacade server;
     private final String serverUrl;
-    private String username = null;
+    private String currentUsername = null;
+    private String authToken = null;
     private ClientState clientState = ClientState.PRE_LOGIN;
 
     public ChessClient(String serverUrl) {
@@ -31,7 +31,7 @@ public class ChessClient {
                 case GAMEPLAY -> gameplay(cmd, params);
             };
         } catch (ResponseException ex) {
-            return ex.getMessage();
+            return SET_TEXT_COLOR_RED + "  " + ex.getMessage();
         }
     }
 
@@ -57,12 +57,42 @@ public class ChessClient {
         };
     }
 
-    private String register(String... params) {
-        return "register method";
+    private String register(String... params) throws ResponseException {
+        if (params.length == 3) {
+
+            var username = params[0];
+            var password = params[1];
+            var email = params[2];
+
+            if (!email.contains("@") && !email.contains(".")) {
+                throw new ResponseException(400, "Please enter a valid email address.");
+            }
+
+            var result = server.register(username, password, email);
+
+            currentUsername = result.username();
+            authToken = result.authToken();
+
+            clientState = ClientState.POST_LOGIN;
+            return String.format("Welcome to chess, %s!", currentUsername);
+        }
+        throw new ResponseException(400, SET_TEXT_UNDERLINE + "Expected" + RESET_TEXT_UNDERLINE + ": register <USERNAME> <PASSWORD> <EMAIL>");
     }
 
-    private String login(String... params) {
-        return "login method";
+    private String login(String... params) throws ResponseException {
+        if (params.length == 2) {
+            var username = params[0];
+            var password = params[1];
+
+            var result = server.login(username, password);
+
+            currentUsername = result.username();
+            authToken = result.authToken();
+
+            clientState = ClientState.POST_LOGIN;
+            return String.format("Welcome back to chess, %s!", currentUsername);
+        }
+        throw new ResponseException(400, SET_TEXT_UNDERLINE + "Expected" + RESET_TEXT_UNDERLINE + ": login <USERNAME> <PASSWORD>");
     }
 
     public String help() {
@@ -90,7 +120,7 @@ public class ChessClient {
         return output;
     }
 
-    public String getUsername() {
-        return username != null ? username : "No current user";
+    public String getCurrentUsername() {
+        return currentUsername != null ? currentUsername : "Not logged in";
     }
 }
