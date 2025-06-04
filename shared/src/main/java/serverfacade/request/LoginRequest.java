@@ -1,4 +1,4 @@
-package server.request;
+package serverfacade.request;
 
 import com.google.gson.annotations.Expose;
 

@@ -1,4 +1,4 @@
-package server.result;
+package serverfacade.result;
 
 public record JoinResult() {
 }

@@ -1,14 +1,14 @@
-package server;
+package serverfacade;
 
 import chess.ChessGame;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import model.GameData;
-import server.request.CreateRequest;
-import server.request.JoinRequest;
-import server.request.LoginRequest;
-import server.request.RegisterRequest;
-import server.result.*;
+import serverfacade.request.CreateRequest;
+import serverfacade.request.JoinRequest;
+import serverfacade.request.LoginRequest;
+import serverfacade.request.RegisterRequest;
+import serverfacade.result.*;
 
 import java.io.IOException;
 import java.io.InputStream;

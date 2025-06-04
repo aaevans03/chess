@@ -1,4 +1,4 @@
-package server.request;
+package serverfacade.request;
 
 import chess.ChessGame;
 import com.google.gson.annotations.Expose;
