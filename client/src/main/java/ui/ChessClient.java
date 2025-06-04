@@ -95,6 +95,7 @@ public class ChessClient {
             case "create", "c" -> create(params);
             case "list", "l" -> list(params);
             case "join", "j" -> join(params);
+            case "observe", "o" -> observe(params);
             case "logout", "log" -> logout(params);
             case "quit", "q" -> "quit";
             default -> CommandSyntax.help(ClientState.POST_LOGIN);
@@ -134,8 +135,7 @@ public class ChessClient {
      * Retrieve list of games from the database and number them in the client.
      *
      * @param params If any parameters are provided, it's invalid input
-     * @return
-     * @throws ResponseException
+     * @return List of games
      */
     private String list(String... params) throws ResponseException {
         if (params.length == 0) {
@@ -193,17 +193,19 @@ public class ChessClient {
 
     private String join(String... params) throws ResponseException {
         if (params.length == 2) {
-            var id = Integer.parseInt(params[0]);
-            var color = params[1];
 
+            int id;
             int serverGameId;
 
-            // User joins a game that does not exist
+            // User enters an invalid game ID, or joins a game that doesn't exist
             try {
+                id = Integer.parseInt(params[0]);
                 serverGameId = gameMap.get(id);
-            } catch (NullPointerException ex) {
+            } catch (NumberFormatException | NullPointerException ex) {
                 throw new ResponseException(400, "Invalid game ID entered, try again.");
             }
+
+            var color = params[1];
 
             ChessGame.TeamColor teamColor;
 
@@ -219,7 +221,7 @@ public class ChessClient {
             }
 
             server.join(currentAuthToken, teamColor, serverGameId);
-            clientState = ClientState.GAMEPLAY;
+            // PHASE 6: change client state to gameplay. clientState = ClientState.GAMEPLAY;
 
             var board = new ChessBoard();
             board.resetBoard();
@@ -230,6 +232,31 @@ public class ChessClient {
         }
 
         throw new ResponseException(400, syntaxErrorFormatter(CommandSyntax.JOIN));
+    }
+
+    private String observe(String... params) throws ResponseException {
+        if (params.length == 1) {
+            int id;
+            int serverGameId;
+
+            // User enters an invalid game ID, or joins a game that doesn't exist
+            try {
+                id = Integer.parseInt(params[0]);
+                serverGameId = gameMap.get(id);
+            } catch (NumberFormatException | NullPointerException ex) {
+                throw new ResponseException(400, "Invalid game ID entered, try again.");
+            }
+
+            // PHASE 6: change client state to gameplay. clientState = ClientState.GAMEPLAY;
+
+            var board = new ChessBoard();
+            board.resetBoard();
+
+            var drawnBoard = new BoardDrawer().drawBoard(ChessGame.TeamColor.WHITE, board);
+
+            return String.format(SET_TEXT_COLOR_BLUE + "  Observing game %d.\n\n%s", id, drawnBoard);
+        }
+        throw new ResponseException(400, syntaxErrorFormatter(CommandSyntax.OBSERVE));
     }
 
     private String gameplay(String cmd, String[] params) throws ResponseException {
