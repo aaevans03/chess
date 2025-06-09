@@ -5,6 +5,7 @@ import chess.ChessGame;
 import model.GameData;
 import serverfacade.ResponseException;
 import serverfacade.ServerFacade;
+import websocket.commands.UserGameCommand;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -45,7 +46,7 @@ public class ChessClient {
 
     private String preLogin(String cmd, String[] params) throws ResponseException {
         return switch (cmd) {
-            case "register", "r" -> register(params);
+            case "register", "r", "create", "c" -> register(params);
             case "login", "l" -> login(params);
             case "quit", "q" -> SET_TEXT_COLOR_MAGENTA + "  Have a nice day!";
             case "help", "h" -> CommandSyntax.help(ClientState.PRE_LOGIN);
@@ -233,6 +234,10 @@ public class ChessClient {
             // open a websocket connection with the server using the `/ws` endpoint
             // send a CONNECT WebSocket message to the server
             // transition to the gameplay UI.
+            ws = new WebsocketCommunicator(serverUrl);
+
+            var cmd = new UserGameCommand(UserGameCommand.CommandType.CONNECT, currentAuthToken, id);
+            ws.sendMessage(cmd);
 
             var board = new ChessBoard();
             board.resetBoard();

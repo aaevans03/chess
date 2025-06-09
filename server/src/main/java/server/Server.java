@@ -17,6 +17,7 @@ public class Server {
     UserHandler userHandler;
     GameHandler gameHandler;
     ClearHandler clearHandler;
+    WebsocketHandler websocketHandler;
 
     /**
      * Constructor: determine if we are storing application data in memory or in MySQL
@@ -49,6 +50,7 @@ public class Server {
         userHandler = new UserHandler(userDB, authDB);
         gameHandler = new GameHandler(authDB, gameDB);
         clearHandler = new ClearHandler(userDB, authDB, gameDB);
+        websocketHandler = new WebsocketHandler();
     }
 
     public int run(int desiredPort) {
@@ -57,6 +59,9 @@ public class Server {
         Spark.staticFiles.location("web");
 
         // Register your endpoints and handle exceptions here.
+        // WEBSOCKET
+        Spark.webSocket("/ws", websocketHandler);
+
         // USER
         Spark.post("/user", userHandler::handleRegister);
         Spark.post("/session", userHandler::handleLogin);
