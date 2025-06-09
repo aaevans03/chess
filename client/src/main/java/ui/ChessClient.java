@@ -16,6 +16,7 @@ import static ui.EscapeSequences.*;
 public class ChessClient {
     private final ServerFacade server;
     private final String serverUrl;
+    private WebsocketCommunicator ws;
     private String currentUsername = null;
     private String currentAuthToken = null;
     private ClientState clientState = ClientState.PRE_LOGIN;
@@ -278,7 +279,7 @@ public class ChessClient {
 
     private String gameplay(String cmd, String[] params) throws ResponseException {
         return switch (cmd) {
-            case "exit", "e" -> exit(params);
+            case "exit", "e", "quit", "q" -> exit(params);
             case "help", "h" -> CommandSyntax.help(ClientState.GAMEPLAY);
             default -> SET_TEXT_COLOR_RED + "  Unknown command. List of valid commands:\n"
                     + CommandSyntax.help(ClientState.GAMEPLAY);
