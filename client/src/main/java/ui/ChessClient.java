@@ -226,8 +226,13 @@ public class ChessClient {
                 throw new ResponseException(400, syntaxErrorFormatter(CommandSyntax.JOIN));
             }
 
+            // Call server API, change client state to gameplay.
             server.join(currentAuthToken, teamColor, serverGameId);
-            // PHASE 6: change client state to gameplay. clientState = ClientState.GAMEPLAY;
+            clientState = ClientState.GAMEPLAY;
+
+            // open a websocket connection with the server using the `/ws` endpoint
+            // send a CONNECT WebSocket message to the server
+            // transition to the gameplay UI.
 
             var board = new ChessBoard();
             board.resetBoard();
@@ -253,7 +258,8 @@ public class ChessClient {
                 throw new ResponseException(400, "Invalid game ID entered, try again.");
             }
 
-            // PHASE 6: change client state to gameplay. clientState = ClientState.GAMEPLAY;
+            // PHASE 6: change client state to gameplay.
+            clientState = ClientState.GAMEPLAY;
 
             var board = new ChessBoard();
             board.resetBoard();
