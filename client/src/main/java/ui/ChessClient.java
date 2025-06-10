@@ -5,7 +5,6 @@ import chess.ChessGame;
 import model.GameData;
 import serverfacade.ResponseException;
 import serverfacade.ServerFacade;
-import websocket.commands.UserGameCommand;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -236,9 +235,7 @@ public class ChessClient {
             // send a CONNECT WebSocket message to the server
             // transition to the gameplay UI.
             ws = new WebsocketCommunicator(serverUrl);
-
-            var cmd = new UserGameCommand(UserGameCommand.CommandType.CONNECT, currentAuthToken, id);
-            ws.sendMessage(cmd);
+            ws.connect(currentAuthToken, id);
 
             var board = new ChessBoard();
             board.resetBoard();

@@ -3,6 +3,7 @@ package ui;
 import com.google.gson.Gson;
 import serverfacade.ResponseException;
 import websocket.commands.UserGameCommand;
+import websocket.messages.LoadGameMessage;
 import websocket.messages.ServerMessage;
 
 import javax.websocket.*;
@@ -23,19 +24,25 @@ public class WebsocketCommunicator extends Endpoint {
             this.session = container.connectToServer(this, socketURI);
 
             // add a message handler to the WS session
-            this.session.addMessageHandler((MessageHandler.Whole<String>) message -> {
-                ServerMessage serverMessage = new Gson().fromJson(message, ServerMessage.class);
+            this.session.addMessageHandler(new MessageHandler.Whole<String>() {
+                @Override
+                public void onMessage(String message) {
+                    var gson = new Gson();
+                    ServerMessage serverMessage = gson.fromJson(message, ServerMessage.class);
 
-                switch (serverMessage.getServerMessageType()) {
-                    case LOAD_GAME -> {
-                        // game sent back
-                    }
-                    case ERROR -> {
-                        // error, invalid command sent to server
-                    }
-                    case NOTIFICATION -> {
-                        // notification to broadcast in client, replace later
-                        System.out.println(serverMessage);
+                    switch (serverMessage.getServerMessageType()) {
+                        case LOAD_GAME -> {
+                            // game sent back
+                            LoadGameMessage loadGameMessage = gson.fromJson(message, LoadGameMessage.class);
+                            System.out.println(loadGameMessage.getGame());
+                        }
+                        case ERROR -> {
+                            // error, invalid command sent to server
+                        }
+                        case NOTIFICATION -> {
+                            // notification to broadcast in client, replace later
+                            System.out.println(serverMessage);
+                        }
                     }
                 }
             });
@@ -45,8 +52,14 @@ public class WebsocketCommunicator extends Endpoint {
         }
     }
 
+    // unnecessary for our application, required for endpoint
     @Override
     public void onOpen(Session session, EndpointConfig endpointConfig) {
+    }
+
+    public void connect(String authToken, int id) throws ResponseException {
+        var cmd = new UserGameCommand(UserGameCommand.CommandType.CONNECT, authToken, id);
+        sendMessage(cmd);
     }
 
     public void sendMessage(UserGameCommand cmd) throws ResponseException {
