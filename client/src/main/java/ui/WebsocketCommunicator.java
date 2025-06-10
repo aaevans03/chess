@@ -3,6 +3,7 @@ package ui;
 import com.google.gson.Gson;
 import serverfacade.ResponseException;
 import websocket.commands.UserGameCommand;
+import websocket.messages.ServerMessage;
 
 import javax.websocket.*;
 import java.io.IOException;
@@ -22,10 +23,20 @@ public class WebsocketCommunicator extends Endpoint {
             this.session = container.connectToServer(this, socketURI);
 
             // add a message handler to the WS session
-            this.session.addMessageHandler(new MessageHandler.Whole<String>() {
-                @Override
-                public void onMessage(String message) {
-                    System.out.println(message);
+            this.session.addMessageHandler((MessageHandler.Whole<String>) message -> {
+                ServerMessage serverMessage = new Gson().fromJson(message, ServerMessage.class);
+
+                switch (serverMessage.getServerMessageType()) {
+                    case LOAD_GAME -> {
+                        // game sent back
+                    }
+                    case ERROR -> {
+                        // error, invalid command sent to server
+                    }
+                    case NOTIFICATION -> {
+                        // notification to broadcast in client, replace later
+                        System.out.println(serverMessage);
+                    }
                 }
             });
 
