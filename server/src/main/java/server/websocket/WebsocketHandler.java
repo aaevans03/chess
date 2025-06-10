@@ -16,12 +16,13 @@ import websocket.messages.LoadGameMessage;
 import websocket.messages.NotificationMessage;
 
 import java.io.IOException;
+import java.util.concurrent.ConcurrentHashMap;
 
 @WebSocket
 public class WebsocketHandler {
 
     ObjectEncoderDecoder objectEncoderDecoder = new ObjectEncoderDecoder();
-    private final ConnectionManager connections = new ConnectionManager();
+    private final ConcurrentHashMap<Integer, ConnectionManager> gameConnections = new ConcurrentHashMap<>();
 
     MySqlAuthDAO authDB = new MySqlAuthDAO();
     MySqlGameDAO gameDB = new MySqlGameDAO();
@@ -38,15 +39,21 @@ public class WebsocketHandler {
             throw new InvalidAuthTokenException();
         }
 
-        // add connection to connection manager
-        connections.add(clientAuthToken, session);
-
         var clientGameID = cmd.getGameID();
+
+        // If connections associated with a game already exist, then add the current session
+        if (gameConnections.containsKey(clientGameID)) {
+            gameConnections.get(clientGameID).add(clientAuthToken, session);
+        }
+        // Otherwise, add a new ID to the gameConnections
+        else {
+            gameConnections.put(clientGameID, new ConnectionManager());
+            gameConnections.get(clientGameID).add(clientAuthToken, session);
+        }
 
         switch (cmd.getCommandType()) {
             case CONNECT -> {
                 connect(session, clientAuthToken, clientGameID);
-                broadcast(clientAuthToken, clientGameID);
             }
             case MAKE_MOVE -> {
                 makeMove(session, clientAuthToken, clientGameID);
@@ -65,15 +72,15 @@ public class WebsocketHandler {
 
     private void connect(Session session, String currentAuthToken, int id) throws IOException {
         try {
-            // load game message sent back to the client
-
+            // get the game from the DB
             var currentGame = gameDB.getGame(id).game();
 
+            // send a LOAD_GAME message back to the client
             var loadGameMessage = new LoadGameMessage(currentGame);
+            var encodedLoadGameMessage = objectEncoderDecoder.encode(loadGameMessage);
 
-            var encodedLoadGameMessage = new Gson().toJson(loadGameMessage);
-
-            session.getRemote().sendString(encodedLoadGameMessage);
+            var conn = new Connection(currentAuthToken, session);
+            conn.send(encodedLoadGameMessage);
 
             // notification sent to all other clients in the game that a player has connected as player or observer
             broadcast(currentAuthToken, id);
@@ -110,9 +117,8 @@ public class WebsocketHandler {
             var msg = String.format("user '%s' has joined game %d", username, id);
             System.out.println(msg);
 
-            var notification = new NotificationMessage(msg);
-
-            connections.broadcast(currentAuthToken, notification);
+            var notification = objectEncoderDecoder.encode(new NotificationMessage(msg));
+            gameConnections.get(id).broadcast(currentAuthToken, notification);
         } catch (IOException e) {
             throw new ResponseException(500, e.getMessage());
         }

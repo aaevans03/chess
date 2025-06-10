@@ -15,6 +15,7 @@ import static ui.EscapeSequences.*;
 public class ChessClient {
     private final ServerFacade server;
     private final String serverUrl;
+    private final NotificationHandler notificationHandler;
     private WebsocketCommunicator ws;
     private String currentUsername = null;
     private String currentAuthToken = null;
@@ -22,9 +23,10 @@ public class ChessClient {
     private int gameIterator = 1;
     private final HashMap<Integer, Integer> gameMap;
 
-    public ChessClient(String serverUrl) {
+    public ChessClient(String serverUrl, NotificationHandler notificationHandler) {
         server = new ServerFacade(serverUrl);
         this.serverUrl = serverUrl;
+        this.notificationHandler = notificationHandler;
         this.gameMap = new HashMap<>();
     }
 
@@ -234,7 +236,7 @@ public class ChessClient {
             // open a websocket connection with the server using the `/ws` endpoint
             // send a CONNECT WebSocket message to the server
             // transition to the gameplay UI.
-            ws = new WebsocketCommunicator(serverUrl);
+            ws = new WebsocketCommunicator(serverUrl, notificationHandler);
             ws.connect(currentAuthToken, id);
 
             var board = new ChessBoard();
