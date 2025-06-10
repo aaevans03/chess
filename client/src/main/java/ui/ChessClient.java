@@ -214,20 +214,7 @@ public class ChessClient {
                 throw new ResponseException(400, "Game does not exist, try again.");
             }
 
-            var color = params[1];
-
-            ChessGame.TeamColor teamColor;
-
-            // Join the game
-            if (Objects.equals(color, "white") || Objects.equals(color, "w")
-                    || Objects.equals(color, "WHITE")) {
-                teamColor = ChessGame.TeamColor.WHITE;
-            } else if (Objects.equals(color, "black") || Objects.equals(color, "b")
-                    || Objects.equals(color, "BLACK")) {
-                teamColor = ChessGame.TeamColor.BLACK;
-            } else {
-                throw new ResponseException(400, syntaxErrorFormatter(CommandSyntax.JOIN));
-            }
+            ChessGame.TeamColor teamColor = parseTeamColor(params);
 
             // Call server API, change client state to gameplay.
             server.join(currentAuthToken, teamColor, serverGameId);
@@ -291,6 +278,22 @@ public class ChessClient {
             return SET_TEXT_COLOR_BLUE + "  Exited game.";
         }
         throw new ResponseException(400, syntaxErrorFormatter(CommandSyntax.EXIT));
+    }
+    
+    private ChessGame.TeamColor parseTeamColor(String[] params) throws ResponseException {
+        var requestedColor = params[1];
+        ChessGame.TeamColor teamColor;
+
+        if (Objects.equals(requestedColor, "white") || Objects.equals(requestedColor, "w")
+                || Objects.equals(requestedColor, "WHITE")) {
+            teamColor = ChessGame.TeamColor.WHITE;
+        } else if (Objects.equals(requestedColor, "black") || Objects.equals(requestedColor, "b")
+                || Objects.equals(requestedColor, "BLACK")) {
+            teamColor = ChessGame.TeamColor.BLACK;
+        } else {
+            throw new ResponseException(400, syntaxErrorFormatter(CommandSyntax.JOIN));
+        }
+        return teamColor;
     }
 
     private String syntaxErrorFormatter(String message) {
