@@ -11,6 +11,7 @@ import dataaccess.mysql.MySqlAuthDAO;
 import dataaccess.mysql.MySqlGameDAO;
 import dataaccess.mysql.MySqlUserDAO;
 import server.exceptions.*;
+import server.websocket.WebsocketHandler;
 import spark.Spark;
 
 public class Server {
