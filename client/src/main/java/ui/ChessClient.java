@@ -279,7 +279,7 @@ public class ChessClient {
 
     private String gameplay(String cmd, String[] params) throws ResponseException {
         return switch (cmd) {
-            case "exit", "e", "quit", "q" -> exit(params);
+            case "exit", "e", "quit", "q", "leave", "l" -> exit(params);
             case "help", "h" -> CommandSyntax.help(ClientState.GAMEPLAY);
             default -> SET_TEXT_COLOR_RED + "  Unknown command. List of valid commands:\n"
                     + CommandSyntax.help(ClientState.GAMEPLAY);
