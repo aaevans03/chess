@@ -2,6 +2,7 @@ package ui;
 
 import chess.ChessBoard;
 import chess.ChessGame;
+import websocket.messages.ErrorMessage;
 import websocket.messages.NotificationMessage;
 
 import java.util.Scanner;
@@ -55,6 +56,12 @@ public class Repl implements NotificationHandler {
     @Override
     public void printBoard(ChessGame.TeamColor teamColor, ChessBoard chessBoard) {
         System.out.println("\r" + new BoardDrawer().drawBoard(teamColor, chessBoard));
+        printPrompt();
+    }
+
+    @Override
+    public void notifyError(ErrorMessage errorMessage) {
+        System.out.println("\r   " + SET_TEXT_COLOR_RED + errorMessage.getErrorMessage());
         printPrompt();
     }
 }

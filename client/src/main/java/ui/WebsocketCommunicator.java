@@ -55,11 +55,14 @@ public class WebsocketCommunicator extends Endpoint {
                 LoadGameMessage loadGameMessage = gson.fromJson(message, LoadGameMessage.class);
                 currentGame = loadGameMessage.getGame();
                 notificationHandler.printBoard(currentTeamColor, currentGame.getBoard());
+
+                var turnNotification = new NotificationMessage(String.format("It is %s's turn", currentGame.getTeamTurn()));
+                notificationHandler.notify(turnNotification);
             }
             case ERROR -> {
                 // error, invalid command sent to server
                 ErrorMessage errorMessage = gson.fromJson(message, ErrorMessage.class);
-                System.out.println(errorMessage.getErrorMessage());
+                notificationHandler.notifyError(errorMessage);
             }
             case NOTIFICATION -> {
                 // notification is broadcast in client

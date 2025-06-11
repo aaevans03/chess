@@ -58,27 +58,19 @@ public class WebsocketHandler {
         }
 
         switch (cmd.getCommandType()) {
-            case CONNECT -> {
-                connect(session, clientAuthToken, clientGameID);
-            }
+            case CONNECT -> connect(session, clientAuthToken, clientGameID);
             case MAKE_MOVE -> {
                 MakeMoveCommand moveCommand =
                         (MakeMoveCommand) objectEncoderDecoder.decode(message, MakeMoveCommand.class);
                 makeMove(session, clientAuthToken, clientGameID, moveCommand.getChessMove());
             }
-            case LEAVE -> {
-                leave(session, clientAuthToken, clientGameID);
-            }
-            case RESIGN -> {
-                resign(session, clientAuthToken, clientGameID);
-            }
-            default -> {
-                throw new InvalidInputException();
-            }
+            case LEAVE -> leave(session, clientAuthToken, clientGameID);
+            case RESIGN -> resign(session, clientAuthToken, clientGameID);
+            default -> throw new InvalidInputException();
         }
     }
 
-    private void connect(Session session, String currentAuthToken, int id) throws IOException {
+    private void connect(Session session, String currentAuthToken, int id) throws ResponseException {
         try {
             // get the game from the DB
             var currentGame = gameDB.getGame(id);
@@ -95,11 +87,10 @@ public class WebsocketHandler {
             conn.send(encodedLoadGameMessage);
 
             // notification sent to all other clients in the game that a player has connected as player or observer
-            notifyAll(currentAuthToken, id, notificationType);
+            notifyAllClients(currentAuthToken, id, notificationType, "");
 
         } catch (IOException | ResponseException ex) {
-            var errorMessage = gson.toJson(new ErrorMessage(ex.getMessage()));
-            session.getRemote().sendString(errorMessage);
+            sendError(session, ex.getMessage());
         }
     }
 
@@ -118,7 +109,7 @@ public class WebsocketHandler {
         return notificationType;
     }
 
-    private void makeMove(Session session, String currentAuthToken, int id, ChessMove chessMove) throws IOException {
+    private void makeMove(Session session, String currentAuthToken, int id, ChessMove chessMove) throws IOException, ResponseException {
         // check if it's the current user's turn
         var currentGameData = gameDB.getGame(id);
         var currentGame = currentGameData.game();
@@ -126,12 +117,10 @@ public class WebsocketHandler {
         var currentUserColor = getUserColor(currentAuthToken, currentGameData);
 
         if (currentUserColor == null) {
-            var error = gson.toJson(new ErrorMessage("Move cannot be made, you are not joined in the game"));
-            session.getRemote().sendString(error);
+            sendError(session, "Move cannot be made, you are not joined in the game.");
             return;
         } else if (!currentUserColor.equals(currentGame.getTeamTurn())) {
-            var error = gson.toJson(new ErrorMessage("Move cannot be made, wait for your next turn"));
-            session.getRemote().sendString(error);
+            sendError(session, "Move cannot be made, wait for your next turn.");
             return;
         }
 
@@ -141,8 +130,7 @@ public class WebsocketHandler {
         var teamColor = currentChessBoard.getPiece(chessMove.getStartPosition()).getTeamColor();
 
         if (teamColor == null || teamColor != currentUserColor) {
-            var error = gson.toJson(new ErrorMessage("Move cannot be made, not your team color"));
-            session.getRemote().sendString(error);
+            sendError(session, "Move cannot be made, the requested piece is not your team color's.");
             return;
         }
 
@@ -152,6 +140,7 @@ public class WebsocketHandler {
         for (var move : validMoves) {
             if (move.equals(chessMove)) {
                 try {
+                    var pieceType = currentChessBoard.getPiece(chessMove.getStartPosition()).getPieceType();
                     // if move is valid, update the game with the move made
                     currentGame.makeMove(chessMove);
                     gameDB.updateGame(id, null, null, currentGame);
@@ -161,14 +150,22 @@ public class WebsocketHandler {
                     var encodedLoadGameMessage = objectEncoderDecoder.encode(loadGameMessage);
                     gameConnections.get(id).broadcast("", encodedLoadGameMessage);
 
-                    // TODO: send notification back to clients via a method
-                    session.getRemote().sendString(gson.toJson(new NotificationMessage("valid move")));
+                    char initialCol = (char) (chessMove.getStartPosition().getColumn() - 1 + 'a');
+                    int initialRow = chessMove.getStartPosition().getRow();
+                    char finalCol = (char) (chessMove.getEndPosition().getColumn() - 1 + 'a');
+                    int finalRow = chessMove.getEndPosition().getRow();
 
+                    String moveMessage = pieceType.toString().toLowerCase() + " at " + initialCol + initialRow + " to " + finalCol + finalRow;
+
+                    notifyAllClients(currentAuthToken, id, NotificationType.MOVE_MADE, moveMessage);
+                    return;
                 } catch (InvalidMoveException e) {
-                    System.out.println("fail");
+                    sendError(session, "Move cannot be made, please try again.");
                 }
             }
         }
+
+        sendError(session, "Invalid move entered, please try again.");
 
         // TODO: if move results in check, checkmate or stalemate: notification sent to all clients
     }
@@ -195,7 +192,7 @@ public class WebsocketHandler {
         }
     }
 
-    private void leave(Session session, String currentAuthToken, int id) throws IOException {
+    private void leave(Session session, String currentAuthToken, int id) throws ResponseException {
         try {
             // game is updated in DB to remove root client
             var currentGame = gameDB.getGame(id);
@@ -212,11 +209,10 @@ public class WebsocketHandler {
             }
 
             // notification to all other clients that client left
-            notifyAll(currentAuthToken, id, NotificationType.LEAVE_GAME);
+            notifyAllClients(currentAuthToken, id, NotificationType.LEAVE_GAME, "");
 
         } catch (ResponseException ex) {
-            var errorMessage = gson.toJson(new ErrorMessage(ex.getMessage()));
-            session.getRemote().sendString(errorMessage);
+            sendError(session, ex.getMessage());
         }
     }
 
@@ -226,8 +222,8 @@ public class WebsocketHandler {
         // notification to all clients informing that client resigned
     }
 
-    private void notifyAll(String currentAuthToken, int id,
-                           NotificationType notificationType) throws ResponseException {
+    private void notifyAllClients(String currentAuthToken, int id, NotificationType notificationType,
+                                  String customMsg) throws ResponseException {
         try {
             var username = authDB.getAuthData(currentAuthToken).username();
             String msg = "";
@@ -236,7 +232,7 @@ public class WebsocketHandler {
                 case PLAYER_JOIN_WHITE -> msg = String.format("%s has joined the game as white!", username);
                 case PLAYER_JOIN_BLACK -> msg = String.format("%s has joined the game as black!", username);
                 case OBSERVER_JOIN -> msg = String.format("%s has joined the game as an observer!", username);
-                case MOVE_MADE -> msg = "A move has been made";
+                case MOVE_MADE -> msg = String.format("%s moved the %s.", username, customMsg);
                 case LEAVE_GAME -> msg = String.format("%s has left the game", username);
                 case RESIGN -> msg = String.format("%s has resigned", username);
                 case CHECK -> msg = "Check!";
@@ -245,10 +241,19 @@ public class WebsocketHandler {
                 default -> msg = "Error occurred";
             }
 
-            System.out.println(msg);
+//            System.out.println(msg);
             var notification = objectEncoderDecoder.encode(new NotificationMessage(msg));
             gameConnections.get(id).broadcast(currentAuthToken, notification);
 
+        } catch (IOException e) {
+            throw new ResponseException(500, e.getMessage());
+        }
+    }
+
+    private void sendError(Session session, String errorMessage) throws ResponseException {
+        try {
+            var error = objectEncoderDecoder.encode(new ErrorMessage(errorMessage));
+            session.getRemote().sendString(error);
         } catch (IOException e) {
             throw new ResponseException(500, e.getMessage());
         }
