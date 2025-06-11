@@ -23,6 +23,7 @@ import websocket.messages.NotificationMessage;
 import websocket.messages.NotificationType;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.concurrent.ConcurrentHashMap;
 
 @WebSocket
@@ -30,6 +31,7 @@ public class WebsocketHandler {
 
     ObjectEncoderDecoder objectEncoderDecoder = new ObjectEncoderDecoder();
     private final ConcurrentHashMap<Integer, ConnectionManager> gameConnections = new ConcurrentHashMap<>();
+    private final ArrayList<Integer> endedGameList = new ArrayList<Integer>();
 
     MySqlAuthDAO authDB = new MySqlAuthDAO();
     MySqlGameDAO gameDB = new MySqlGameDAO();
@@ -111,6 +113,12 @@ public class WebsocketHandler {
     }
 
     private void makeMove(Session session, String currentAuthToken, int id, ChessMove chessMove) throws IOException, ResponseException {
+        // check if game is being played
+        if (endedGameList.contains(id)) {
+            sendError(session, "Move cannot be made, game has ended.");
+            return;
+        }
+
         // check if it's the current user's turn
         var currentGameData = gameDB.getGame(id);
         var currentGame = currentGameData.game();
@@ -161,14 +169,15 @@ public class WebsocketHandler {
                     // send a MOVE_MADE message back to all other clients
                     sendMoveMadeMessage(currentAuthToken, id, chessMove, pieceType);
 
-                    // TODO: if move results in check, checkmate or stalemate: notification sent to all clients, no more moves can be made
                     ChessGame.TeamColor otherUserColor = (currentUserColor.equals(ChessGame.TeamColor.WHITE) ?
                             ChessGame.TeamColor.BLACK : ChessGame.TeamColor.WHITE);
 
                     if (currentGame.isInStalemate(otherUserColor)) {
                         notifyAllClients("", id, NotificationType.STALEMATE, otherUserColor.toString());
+                        endedGameList.add(id);
                     } else if (currentGame.isInCheckmate(otherUserColor)) {
                         notifyAllClients("", id, NotificationType.CHECKMATE, otherUserColor.toString());
+                        endedGameList.add(id);
                     } else if (currentGame.isInCheck(otherUserColor)) {
                         notifyAllClients("", id, NotificationType.CHECK, otherUserColor.toString());
                     }
