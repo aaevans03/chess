@@ -1,6 +1,5 @@
 package ui;
 
-import chess.ChessBoard;
 import chess.ChessGame;
 import model.GameData;
 import serverfacade.ResponseException;
@@ -234,26 +233,24 @@ public class ChessClient {
 
     private String observe(String... params) throws ResponseException {
         if (params.length == 1) {
-            int id;
             int serverGameId;
 
             // User enters an invalid game ID, or joins a game that doesn't exist
             try {
-                id = Integer.parseInt(params[0]);
-                serverGameId = gameMap.get(id);
+                currentGameID = Integer.parseInt(params[0]);
+                serverGameId = gameMap.get(currentGameID);
             } catch (NumberFormatException | NullPointerException ex) {
                 throw new ResponseException(400, "Invalid game ID entered, try again.");
             }
 
-            // PHASE 6: change client state to gameplay.
+            // Change client state to gameplay.
             clientState = ClientState.GAMEPLAY;
 
-            var board = new ChessBoard();
-            board.resetBoard();
+            // open a websocket connection with the server using the `/ws` endpoint
+            ws = new WebsocketCommunicator(serverUrl, notificationHandler);
+            ws.connect(currentAuthToken, currentGameID);
 
-            var drawnBoard = new BoardDrawer().drawBoard(ChessGame.TeamColor.WHITE, board);
-
-            return String.format(SET_TEXT_COLOR_BLUE + "  Observing game %d.\n%s", id, drawnBoard);
+            return String.format(SET_TEXT_COLOR_BLUE + "  Observing game %d.\n", currentGameID);
         }
         throw new ResponseException(400, syntaxErrorFormatter(CommandSyntax.OBSERVE));
     }

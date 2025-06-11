@@ -4,6 +4,7 @@ import chess.ChessGame;
 import com.google.gson.Gson;
 import dataaccess.mysql.MySqlAuthDAO;
 import dataaccess.mysql.MySqlGameDAO;
+import model.GameData;
 import org.eclipse.jetty.websocket.api.Session;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketMessage;
 import org.eclipse.jetty.websocket.api.annotations.WebSocket;
@@ -79,14 +80,7 @@ public class WebsocketHandler {
             var username = authDB.getAuthData(currentAuthToken).username();
 
             // determine type of notification
-            NotificationType notificationType;
-            if (currentGame.whiteUsername().equals(username)) {
-                notificationType = NotificationType.PLAYER_JOIN_WHITE;
-            } else if (currentGame.blackUsername().equals(username)) {
-                notificationType = NotificationType.PLAYER_JOIN_BLACK;
-            } else {
-                notificationType = NotificationType.OBSERVER_JOIN;
-            }
+            NotificationType notificationType = getConnectNotificationType(currentGame, username);
 
             // send a LOAD_GAME message back to the client
             var loadGameMessage = new LoadGameMessage(currentGame.game());
@@ -104,6 +98,21 @@ public class WebsocketHandler {
         }
     }
 
+    private NotificationType getConnectNotificationType(GameData currentGame, String username) {
+        NotificationType notificationType;
+        var whiteUsername = currentGame.whiteUsername();
+        var blackUsername = currentGame.blackUsername();
+
+        if (whiteUsername != null && whiteUsername.equals(username)) {
+            notificationType = NotificationType.PLAYER_JOIN_WHITE;
+        } else if (blackUsername != null && blackUsername.equals(username)) {
+            notificationType = NotificationType.PLAYER_JOIN_BLACK;
+        } else {
+            notificationType = NotificationType.OBSERVER_JOIN;
+        }
+        return notificationType;
+    }
+
     private void makeMove(Session session, String currentAuthToken, int id) {
         // verify the validity of the move
         // update the game with the move made
@@ -118,10 +127,13 @@ public class WebsocketHandler {
             var currentGame = gameDB.getGame(id);
             var username = authDB.getAuthData(currentAuthToken).username();
 
+            var whiteUsername = currentGame.whiteUsername();
+            var blackUsername = currentGame.blackUsername();
+
             // determine which username to remove
-            if (currentGame.whiteUsername().equals(username)) {
+            if (whiteUsername != null && whiteUsername.equals(username)) {
                 gameDB.updateGame(id, "SET NULL", ChessGame.TeamColor.WHITE, null);
-            } else if (currentGame.blackUsername().equals(username)) {
+            } else if (blackUsername != null && blackUsername.equals(username)) {
                 gameDB.updateGame(id, "SET NULL", ChessGame.TeamColor.BLACK, null);
             }
 
