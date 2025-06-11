@@ -172,19 +172,38 @@ public class MySqlGameDAO implements GameDAO {
     }
 
     private void updateGameUser(int gameID, String username, ChessGame.TeamColor color) throws DataAccessException {
-        String sql = ("UPDATE gameData SET " +
-                (color == ChessGame.TeamColor.WHITE ? "whiteUsername" : "blackUsername") + "=? WHERE gameID=? AND " +
-                (color == ChessGame.TeamColor.WHITE ? "whiteUsername" : "blackUsername") + " IS NULL;");
+        boolean removeUsername = username.equals("SET NULL");
+        String sql = setUpdateGameUserSql(color, removeUsername);
+
         try (var conn = DatabaseManager.getConnection()) {
             try (var preparedStatement = conn.prepareStatement(sql)) {
-                preparedStatement.setString(1, username);
-                preparedStatement.setInt(2, gameID);
+
+                if (removeUsername) {
+                    preparedStatement.setInt(1, gameID);
+                } else {
+                    preparedStatement.setString(1, username);
+                    preparedStatement.setInt(2, gameID);
+                }
+                System.out.println(preparedStatement);
                 preparedStatement.executeUpdate();
             }
         } catch (SQLException ex) {
             throw new DataAccessException(String.format("Unable to configure database: %s", ex.getMessage()));
         }
+    }
 
+    private static String setUpdateGameUserSql(ChessGame.TeamColor color, boolean removeUsername) {
+        String sql;
+
+        if (removeUsername) {
+            sql = ("UPDATE gameData SET " +
+                    (color == ChessGame.TeamColor.WHITE ? "whiteUsername" : "blackUsername") + "=NULL WHERE gameID=?");
+        } else {
+            sql = ("UPDATE gameData SET " +
+                    (color == ChessGame.TeamColor.WHITE ? "whiteUsername" : "blackUsername") + "=? WHERE gameID=? AND " +
+                    (color == ChessGame.TeamColor.WHITE ? "whiteUsername" : "blackUsername") + " IS NULL;");
+        }
+        return sql;
     }
 
     private GameData parseGame(ResultSet resultSet) throws SQLException {
