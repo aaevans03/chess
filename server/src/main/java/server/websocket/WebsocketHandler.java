@@ -4,7 +4,6 @@ import chess.ChessGame;
 import chess.ChessMove;
 import chess.ChessPiece;
 import chess.InvalidMoveException;
-import com.google.gson.Gson;
 import dataaccess.mysql.MySqlAuthDAO;
 import dataaccess.mysql.MySqlGameDAO;
 import model.GameData;
@@ -35,7 +34,6 @@ public class WebsocketHandler {
 
     MySqlAuthDAO authDB = new MySqlAuthDAO();
     MySqlGameDAO gameDB = new MySqlGameDAO();
-    Gson gson = new Gson();
 
     @OnWebSocketMessage
     public void onMessage(Session session, String message) throws ResponseException, IOException {
@@ -83,16 +81,17 @@ public class WebsocketHandler {
             NotificationType notificationType = getConnectNotificationType(currentGame, username);
 
             // send a LOAD_GAME message back to the client
-            var loadGameMessage = new LoadGameMessage(currentGame.game());
+            boolean isEnded = endedGameList.contains(id);
+
+            var loadGameMessage = new LoadGameMessage(currentGame.game(), isEnded);
             var encodedLoadGameMessage = objectEncoderDecoder.encode(loadGameMessage);
 
-            var conn = new Connection(currentAuthToken, session);
-            conn.send(encodedLoadGameMessage);
+            notifyClient(session, encodedLoadGameMessage);
 
             // notification sent to all other clients in the game that a player has connected as player or observer
             notifyAllClients(currentAuthToken, id, notificationType, "");
 
-        } catch (IOException | ResponseException ex) {
+        } catch (ResponseException ex) {
             sendError(session, ex.getMessage());
         }
     }
@@ -162,7 +161,7 @@ public class WebsocketHandler {
                     gameDB.updateGame(id, null, null, currentGame);
 
                     // send a LOAD_GAME message back to all clients
-                    var loadGameMessage = new LoadGameMessage(currentGame);
+                    var loadGameMessage = new LoadGameMessage(currentGame, false);
                     var encodedLoadGameMessage = objectEncoderDecoder.encode(loadGameMessage);
                     gameConnections.get(id).broadcast("", encodedLoadGameMessage);
 
@@ -252,10 +251,19 @@ public class WebsocketHandler {
         }
     }
 
-    private void resign(Session session, String authToken, int id) {
-        // server marks game as over (no more moves can be made)
-        // game updated in DB
-        // notification to all clients informing that client resigned
+    private void resign(Session session, String currentAuthToken, int id) throws ResponseException {
+        if (endedGameList.contains(id)) {
+            var msg = objectEncoderDecoder.encode(new NotificationMessage("Can't resign, game has already ended"));
+            notifyClient(session, msg);
+        } else {
+            // server marks game as over (no more moves can be made)
+            endedGameList.add(id);
+            // notification to all clients informing that client resigned
+            notifyAllClients(currentAuthToken, id, NotificationType.RESIGN, "");
+
+            var msg = objectEncoderDecoder.encode(new NotificationMessage("You resigned, game over!"));
+            notifyClient(session, msg);
+        }
     }
 
     private void notifyAllClients(String currentAuthToken, int id, NotificationType notificationType,
@@ -273,7 +281,7 @@ public class WebsocketHandler {
                 case OBSERVER_JOIN -> msg = String.format("%s has joined the game as an observer!", username);
                 case MOVE_MADE -> msg = String.format("%s moved the %s.", username, customMsg);
                 case LEAVE_GAME -> msg = String.format("%s has left the game", username);
-                case RESIGN -> msg = String.format("%s has resigned, game over!", username);
+                case RESIGN -> msg = String.format("%s resigned, game over!", username);
                 case CHECK -> msg = String.format("%s is in check!", customMsg);
                 case CHECKMATE -> msg = String.format("%s is in checkmate, game over!", customMsg);
                 case STALEMATE -> msg = "Stalemate, game over!";
@@ -284,6 +292,14 @@ public class WebsocketHandler {
             var notification = objectEncoderDecoder.encode(new NotificationMessage(msg));
             gameConnections.get(id).broadcast(currentAuthToken, notification);
 
+        } catch (IOException e) {
+            throw new ResponseException(500, e.getMessage());
+        }
+    }
+
+    private void notifyClient(Session session, String msg) throws ResponseException {
+        try {
+            session.getRemote().sendString(msg);
         } catch (IOException e) {
             throw new ResponseException(500, e.getMessage());
         }

@@ -6,6 +6,7 @@ import chess.ChessPosition;
 import model.GameData;
 import serverfacade.ResponseException;
 import serverfacade.ServerFacade;
+import websocket.commands.UserGameCommand;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -311,8 +312,13 @@ public class ChessClient {
         return "";
     }
 
-    private String resign(String... params) {
-        return "";
+    private String resign(String... params) throws ResponseException {
+        if (params.length == 0) {
+            var cmd = new UserGameCommand(UserGameCommand.CommandType.RESIGN, currentAuthToken, currentGameID);
+            ws.sendMessage(cmd);
+            return "";
+        }
+        throw new ResponseException(400, syntaxErrorFormatter(CommandSyntax.RESIGN));
     }
 
     private String exit(String... params) throws ResponseException {

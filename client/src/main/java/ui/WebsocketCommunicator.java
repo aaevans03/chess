@@ -56,7 +56,13 @@ public class WebsocketCommunicator extends Endpoint {
                 currentGame = loadGameMessage.getGame();
                 notificationHandler.printBoard(currentTeamColor, currentGame.getBoard());
 
-                var turnNotification = new NotificationMessage(String.format("It is %s's turn", currentGame.getTeamTurn()));
+                NotificationMessage turnNotification;
+
+                if (loadGameMessage.isEnded()) {
+                    turnNotification = new NotificationMessage("The game has ended.");
+                } else {
+                    turnNotification = new NotificationMessage(String.format("It is %s's turn", currentGame.getTeamTurn()));
+                }
                 notificationHandler.notify(turnNotification);
             }
             case ERROR -> {
@@ -97,6 +103,8 @@ public class WebsocketCommunicator extends Endpoint {
 
     public void redrawBoard() {
         notificationHandler.printBoard(currentTeamColor, currentGame.getBoard());
+        var turnNotification = new NotificationMessage(String.format("It is %s's turn", currentGame.getTeamTurn()));
+        notificationHandler.notify(turnNotification);
     }
 
     public void makeMove(String authToken, int id, ChessMove move) throws ResponseException {
