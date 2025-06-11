@@ -2,6 +2,7 @@ package server.websocket;
 
 import chess.ChessGame;
 import chess.ChessMove;
+import chess.ChessPiece;
 import chess.InvalidMoveException;
 import com.google.gson.Gson;
 import dataaccess.mysql.MySqlAuthDAO;
@@ -127,7 +128,14 @@ public class WebsocketHandler {
         // check if they can move the requested piece
         var currentChessBoard = currentGame.getBoard();
 
-        var teamColor = currentChessBoard.getPiece(chessMove.getStartPosition()).getTeamColor();
+        var requestedPiece = currentChessBoard.getPiece(chessMove.getStartPosition());
+
+        if (requestedPiece == null) {
+            sendError(session, "Move cannot be made, no piece in that space.");
+            return;
+        }
+
+        var teamColor = requestedPiece.getTeamColor();
 
         if (teamColor == null || teamColor != currentUserColor) {
             sendError(session, "Move cannot be made, the requested piece is not your team color's.");
@@ -150,14 +158,21 @@ public class WebsocketHandler {
                     var encodedLoadGameMessage = objectEncoderDecoder.encode(loadGameMessage);
                     gameConnections.get(id).broadcast("", encodedLoadGameMessage);
 
-                    char initialCol = (char) (chessMove.getStartPosition().getColumn() - 1 + 'a');
-                    int initialRow = chessMove.getStartPosition().getRow();
-                    char finalCol = (char) (chessMove.getEndPosition().getColumn() - 1 + 'a');
-                    int finalRow = chessMove.getEndPosition().getRow();
+                    // send a MOVE_MADE message back to all other clients
+                    sendMoveMadeMessage(currentAuthToken, id, chessMove, pieceType);
 
-                    String moveMessage = pieceType.toString().toLowerCase() + " at " + initialCol + initialRow + " to " + finalCol + finalRow;
+                    // TODO: if move results in check, checkmate or stalemate: notification sent to all clients, no more moves can be made
+                    ChessGame.TeamColor otherUserColor = (currentUserColor.equals(ChessGame.TeamColor.WHITE) ?
+                            ChessGame.TeamColor.BLACK : ChessGame.TeamColor.WHITE);
 
-                    notifyAllClients(currentAuthToken, id, NotificationType.MOVE_MADE, moveMessage);
+                    if (currentGame.isInStalemate(otherUserColor)) {
+                        notifyAllClients("", id, NotificationType.STALEMATE, otherUserColor.toString());
+                    } else if (currentGame.isInCheckmate(otherUserColor)) {
+                        notifyAllClients("", id, NotificationType.CHECKMATE, otherUserColor.toString());
+                    } else if (currentGame.isInCheck(otherUserColor)) {
+                        notifyAllClients("", id, NotificationType.CHECK, otherUserColor.toString());
+                    }
+
                     return;
                 } catch (InvalidMoveException e) {
                     sendError(session, "Move cannot be made, please try again.");
@@ -167,7 +182,19 @@ public class WebsocketHandler {
 
         sendError(session, "Invalid move entered, please try again.");
 
-        // TODO: if move results in check, checkmate or stalemate: notification sent to all clients
+    }
+
+    private void sendMoveMadeMessage(String currentAuthToken, int id, ChessMove chessMove, ChessPiece.PieceType pieceType) throws ResponseException {
+        // determine what spaces they are based on chess board notation
+        char initialCol = (char) (chessMove.getStartPosition().getColumn() - 1 + 'a');
+        int initialRow = chessMove.getStartPosition().getRow();
+
+        char finalCol = (char) (chessMove.getEndPosition().getColumn() - 1 + 'a');
+        int finalRow = chessMove.getEndPosition().getRow();
+
+        String moveMessage = pieceType.toString().toLowerCase() + " at " + initialCol + initialRow + " to " + finalCol + finalRow;
+
+        notifyAllClients(currentAuthToken, id, NotificationType.MOVE_MADE, moveMessage);
     }
 
     /**
@@ -225,7 +252,10 @@ public class WebsocketHandler {
     private void notifyAllClients(String currentAuthToken, int id, NotificationType notificationType,
                                   String customMsg) throws ResponseException {
         try {
-            var username = authDB.getAuthData(currentAuthToken).username();
+            var username = "";
+            if (!currentAuthToken.isEmpty()) {
+                username = authDB.getAuthData(currentAuthToken).username();
+            }
             String msg = "";
 
             switch (notificationType) {
@@ -234,10 +264,10 @@ public class WebsocketHandler {
                 case OBSERVER_JOIN -> msg = String.format("%s has joined the game as an observer!", username);
                 case MOVE_MADE -> msg = String.format("%s moved the %s.", username, customMsg);
                 case LEAVE_GAME -> msg = String.format("%s has left the game", username);
-                case RESIGN -> msg = String.format("%s has resigned", username);
-                case CHECK -> msg = "Check!";
-                case CHECKMATE -> msg = "Checkmate!";
-                case STALEMATE -> msg = "Stalemate!";
+                case RESIGN -> msg = String.format("%s has resigned, game over!", username);
+                case CHECK -> msg = String.format("%s is in check!", customMsg);
+                case CHECKMATE -> msg = String.format("%s is in checkmate, game over!", customMsg);
+                case STALEMATE -> msg = "Stalemate, game over!";
                 default -> msg = "Error occurred";
             }
 
