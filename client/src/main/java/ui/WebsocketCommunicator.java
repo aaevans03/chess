@@ -69,7 +69,8 @@ public class WebsocketCommunicator extends Endpoint {
     public void onOpen(Session session, EndpointConfig endpointConfig) {
     }
 
-    public void connect(String authToken, int id) throws ResponseException {
+    public void connect(String authToken, int id, ChessGame.TeamColor color) throws ResponseException {
+        currentTeamColor = color;
         var cmd = new UserGameCommand(UserGameCommand.CommandType.CONNECT, authToken, id);
         sendMessage(cmd);
     }
@@ -82,6 +83,10 @@ public class WebsocketCommunicator extends Endpoint {
         } catch (IOException ex) {
             throw new ResponseException(500, ex.getMessage());
         }
+    }
+
+    public void redrawBoard() {
+        notificationHandler.printBoard(currentTeamColor, currentGame.getBoard());
     }
 
     public void sendMessage(UserGameCommand cmd) throws ResponseException {

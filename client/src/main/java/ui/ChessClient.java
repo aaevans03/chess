@@ -223,7 +223,7 @@ public class ChessClient {
             // send a CONNECT WebSocket message to the server
             // transition to the gameplay UI.
             ws = new WebsocketCommunicator(serverUrl, notificationHandler);
-            ws.connect(currentAuthToken, serverGameId);
+            ws.connect(currentAuthToken, serverGameId, teamColor);
 
             return String.format(SET_TEXT_COLOR_BLUE + "  Joined game %d.\n", currentGameID);
         }
@@ -248,7 +248,7 @@ public class ChessClient {
 
             // open a websocket connection with the server using the `/ws` endpoint
             ws = new WebsocketCommunicator(serverUrl, notificationHandler);
-            ws.connect(currentAuthToken, serverGameId);
+            ws.connect(currentAuthToken, serverGameId, ChessGame.TeamColor.WHITE);
 
             return String.format(SET_TEXT_COLOR_BLUE + "  Observing game %d.\n", currentGameID);
         }
@@ -268,8 +268,12 @@ public class ChessClient {
         };
     }
 
-    private String redraw(String... params) {
-        return "";
+    private String redraw(String... params) throws ResponseException {
+        if (params.length == 0) {
+            ws.redrawBoard();
+            return "";
+        }
+        throw new ResponseException(400, syntaxErrorFormatter(CommandSyntax.REDRAW));
     }
 
     private String makeMove(String... params) {
