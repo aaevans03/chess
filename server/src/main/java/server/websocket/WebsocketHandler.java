@@ -14,6 +14,7 @@ import websocket.commands.UserGameCommand;
 import websocket.messages.ErrorMessage;
 import websocket.messages.LoadGameMessage;
 import websocket.messages.NotificationMessage;
+import websocket.messages.NotificationType;
 
 import java.io.IOException;
 import java.util.concurrent.ConcurrentHashMap;
@@ -73,17 +74,28 @@ public class WebsocketHandler {
     private void connect(Session session, String currentAuthToken, int id) throws IOException {
         try {
             // get the game from the DB
-            var currentGame = gameDB.getGame(id).game();
+            var currentGame = gameDB.getGame(id);
+            var username = authDB.getAuthData(currentAuthToken).username();
+
+            // determine type of notification
+            NotificationType notificationType;
+            if (currentGame.whiteUsername().equals(username)) {
+                notificationType = NotificationType.PLAYER_JOIN_WHITE;
+            } else if (currentGame.blackUsername().equals(username)) {
+                notificationType = NotificationType.PLAYER_JOIN_BLACK;
+            } else {
+                notificationType = NotificationType.OBSERVER_JOIN;
+            }
 
             // send a LOAD_GAME message back to the client
-            var loadGameMessage = new LoadGameMessage(currentGame);
+            var loadGameMessage = new LoadGameMessage(currentGame.game());
             var encodedLoadGameMessage = objectEncoderDecoder.encode(loadGameMessage);
 
             var conn = new Connection(currentAuthToken, session);
             conn.send(encodedLoadGameMessage);
 
             // notification sent to all other clients in the game that a player has connected as player or observer
-            broadcast(currentAuthToken, id);
+            notifyAll(currentAuthToken, id, notificationType);
 
         } catch (IOException | ResponseException ex) {
             var errorMessage = gson.toJson(new ErrorMessage(ex.getMessage()));
@@ -110,15 +122,29 @@ public class WebsocketHandler {
         // notification to all clients informing that client resigned
     }
 
-    private void broadcast(String currentAuthToken, int id) throws ResponseException {
+    private void notifyAll(String currentAuthToken, int id,
+                           NotificationType notificationType) throws ResponseException {
         try {
             var username = authDB.getAuthData(currentAuthToken).username();
+            String msg = "";
 
-            var msg = String.format("user '%s' has joined game %d", username, id);
+            switch (notificationType) {
+                case PLAYER_JOIN_WHITE -> msg = String.format("%s has joined the game as white!", username);
+                case PLAYER_JOIN_BLACK -> msg = String.format("%s has joined the game as black!", username);
+                case OBSERVER_JOIN -> msg = String.format("%s has joined the game as an observer!", username);
+                case MOVE_MADE -> msg = "A move has been made";
+                case LEAVE_GAME -> msg = String.format("%s has left the game", username);
+                case RESIGN -> msg = String.format("%s has resigned", username);
+                case CHECK -> msg = "Check!";
+                case CHECKMATE -> msg = "Checkmate!";
+                case STALEMATE -> msg = "Stalemate!";
+                default -> msg = "Error occurred";
+            }
+
             System.out.println(msg);
-
             var notification = objectEncoderDecoder.encode(new NotificationMessage(msg));
             gameConnections.get(id).broadcast(currentAuthToken, notification);
+
         } catch (IOException e) {
             throw new ResponseException(500, e.getMessage());
         }
