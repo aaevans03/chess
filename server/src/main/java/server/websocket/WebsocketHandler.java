@@ -1,5 +1,6 @@
 package server.websocket;
 
+import chess.ChessGame;
 import com.google.gson.Gson;
 import dataaccess.mysql.MySqlAuthDAO;
 import dataaccess.mysql.MySqlGameDAO;
@@ -111,9 +112,26 @@ public class WebsocketHandler {
         // if move results in check, checkmate or stalemate: notification sent to all clients
     }
 
-    private void leave(Session session, String authToken, int id) {
-        // game is updated in DB to remove root client
-        // notification to all other clients that client left
+    private void leave(Session session, String currentAuthToken, int id) throws IOException {
+        try {
+            // game is updated in DB to remove root client
+            var currentGame = gameDB.getGame(id);
+            var username = authDB.getAuthData(currentAuthToken).username();
+
+            // determine which username to remove
+            if (currentGame.whiteUsername().equals(username)) {
+                gameDB.updateGame(id, "SET NULL", ChessGame.TeamColor.WHITE, null);
+            } else if (currentGame.blackUsername().equals(username)) {
+                gameDB.updateGame(id, "SET NULL", ChessGame.TeamColor.BLACK, null);
+            }
+
+            // notification to all other clients that client left
+            notifyAll(currentAuthToken, id, NotificationType.LEAVE_GAME);
+
+        } catch (ResponseException ex) {
+            var errorMessage = gson.toJson(new ErrorMessage(ex.getMessage()));
+            session.getRemote().sendString(errorMessage);
+        }
     }
 
     private void resign(Session session, String authToken, int id) {

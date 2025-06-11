@@ -74,6 +74,16 @@ public class WebsocketCommunicator extends Endpoint {
         sendMessage(cmd);
     }
 
+    public void disconnect(String authToken, int id) throws ResponseException {
+        try {
+            var cmd = new UserGameCommand(UserGameCommand.CommandType.LEAVE, authToken, id);
+            sendMessage(cmd);
+            this.session.close();
+        } catch (IOException ex) {
+            throw new ResponseException(500, ex.getMessage());
+        }
+    }
+
     public void sendMessage(UserGameCommand cmd) throws ResponseException {
         try {
             this.session.getBasicRemote().sendText(new Gson().toJson(cmd));

@@ -22,6 +22,7 @@ public class ChessClient {
     private ClientState clientState = ClientState.PRE_LOGIN;
     private int gameIterator = 1;
     private final HashMap<Integer, Integer> gameMap;
+    private int currentGameID = 0;
 
     public ChessClient(String serverUrl, NotificationHandler notificationHandler) {
         server = new ServerFacade(serverUrl);
@@ -201,13 +202,12 @@ public class ChessClient {
     private String join(String... params) throws ResponseException {
         if (params.length == 2) {
 
-            int id;
             int serverGameId;
 
             // User enters an invalid game ID, or joins a game that doesn't exist
             try {
-                id = Integer.parseInt(params[0]);
-                serverGameId = gameMap.get(id);
+                currentGameID = Integer.parseInt(params[0]);
+                serverGameId = gameMap.get(currentGameID);
             } catch (NumberFormatException ex) {
                 throw new ResponseException(400, "Invalid game ID entered, try again.");
             } catch (NullPointerException ex) {
@@ -224,9 +224,9 @@ public class ChessClient {
             // send a CONNECT WebSocket message to the server
             // transition to the gameplay UI.
             ws = new WebsocketCommunicator(serverUrl, notificationHandler);
-            ws.connect(currentAuthToken, id);
+            ws.connect(currentAuthToken, currentGameID);
 
-            return String.format(SET_TEXT_COLOR_BLUE + "  Joined game %d.\n", id);
+            return String.format(SET_TEXT_COLOR_BLUE + "  Joined game %d.\n", currentGameID);
         }
 
         throw new ResponseException(400, syntaxErrorFormatter(CommandSyntax.JOIN));
@@ -269,6 +269,7 @@ public class ChessClient {
 
     private String exit(String... params) throws ResponseException {
         if (params.length == 0) {
+            ws.disconnect(currentAuthToken, currentGameID);
             clientState = ClientState.POST_LOGIN;
             return SET_TEXT_COLOR_BLUE + "  Exited game.";
         }
