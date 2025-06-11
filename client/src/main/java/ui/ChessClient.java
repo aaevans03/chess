@@ -1,6 +1,8 @@
 package ui;
 
 import chess.ChessGame;
+import chess.ChessMove;
+import chess.ChessPosition;
 import model.GameData;
 import serverfacade.ResponseException;
 import serverfacade.ServerFacade;
@@ -276,8 +278,33 @@ public class ChessClient {
         throw new ResponseException(400, syntaxErrorFormatter(CommandSyntax.REDRAW));
     }
 
-    private String makeMove(String... params) {
-        return "";
+    private String makeMove(String... params) throws ResponseException {
+        if (params.length == 2) {
+
+            if (params[0].matches("^[a-h][1-8]$") && params[1].matches("^[a-h][1-8]$")) {
+
+                int initialCol = params[0].charAt(0) - 'a' + 1;
+                int initialRow = Integer.parseInt(String.valueOf(params[0].charAt(1)));
+
+                int finalCol = params[1].charAt(0) - 'a' + 1;
+                int finalRow = Integer.parseInt(String.valueOf(params[1].charAt(1)));
+
+//                System.out.println("Interpreted move:");
+//                System.out.println("INITIAL: " + initialCol + " " + initialRow);
+//                System.out.println("FINAL: " + finalCol + " " + finalRow);
+
+                var initialPosition = new ChessPosition(initialRow, initialCol);
+                var finalPosition = new ChessPosition(finalRow, finalCol);
+
+                var requestedMove = new ChessMove(initialPosition, finalPosition, null);
+
+                ws.makeMove(currentAuthToken, currentGameID, requestedMove);
+                return "";
+            } else {
+                throw new ResponseException(400, syntaxErrorFormatter(CommandSyntax.MAKE_MOVE));
+            }
+        }
+        throw new ResponseException(400, syntaxErrorFormatter(CommandSyntax.MAKE_MOVE));
     }
 
     private String highlightMoves(String... params) {
@@ -291,6 +318,7 @@ public class ChessClient {
     private String exit(String... params) throws ResponseException {
         if (params.length == 0) {
             ws.disconnect(currentAuthToken, currentGameID);
+            currentGameID = 0;
             clientState = ClientState.POST_LOGIN;
             return SET_TEXT_COLOR_BLUE + "  Exited game.";
         }

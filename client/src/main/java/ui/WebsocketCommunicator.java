@@ -1,9 +1,12 @@
 package ui;
 
 import chess.ChessGame;
+import chess.ChessMove;
 import com.google.gson.Gson;
 import serverfacade.ResponseException;
+import websocket.commands.MakeMoveCommand;
 import websocket.commands.UserGameCommand;
+import websocket.messages.ErrorMessage;
 import websocket.messages.LoadGameMessage;
 import websocket.messages.NotificationMessage;
 import websocket.messages.ServerMessage;
@@ -55,6 +58,8 @@ public class WebsocketCommunicator extends Endpoint {
             }
             case ERROR -> {
                 // error, invalid command sent to server
+                ErrorMessage errorMessage = gson.fromJson(message, ErrorMessage.class);
+                System.out.println(errorMessage.getErrorMessage());
             }
             case NOTIFICATION -> {
                 // notification is broadcast in client
@@ -77,9 +82,11 @@ public class WebsocketCommunicator extends Endpoint {
 
     public void disconnect(String authToken, int id) throws ResponseException {
         try {
-            var cmd = new UserGameCommand(UserGameCommand.CommandType.LEAVE, authToken, id);
-            sendMessage(cmd);
-            this.session.close();
+            if (session.isOpen()) {
+                var cmd = new UserGameCommand(UserGameCommand.CommandType.LEAVE, authToken, id);
+                sendMessage(cmd);
+                this.session.close();
+            }
         } catch (IOException ex) {
             throw new ResponseException(500, ex.getMessage());
         }
@@ -87,6 +94,11 @@ public class WebsocketCommunicator extends Endpoint {
 
     public void redrawBoard() {
         notificationHandler.printBoard(currentTeamColor, currentGame.getBoard());
+    }
+
+    public void makeMove(String authToken, int id, ChessMove move) throws ResponseException {
+        var cmd = new MakeMoveCommand(UserGameCommand.CommandType.MAKE_MOVE, authToken, id, move);
+        sendMessage(cmd);
     }
 
     public void sendMessage(UserGameCommand cmd) throws ResponseException {

@@ -1,6 +1,8 @@
 package server.websocket;
 
 import chess.ChessGame;
+import chess.ChessMove;
+import chess.InvalidMoveException;
 import com.google.gson.Gson;
 import dataaccess.mysql.MySqlAuthDAO;
 import dataaccess.mysql.MySqlGameDAO;
@@ -12,6 +14,7 @@ import server.ObjectEncoderDecoder;
 import server.exceptions.InvalidAuthTokenException;
 import server.exceptions.InvalidInputException;
 import serverfacade.ResponseException;
+import websocket.commands.MakeMoveCommand;
 import websocket.commands.UserGameCommand;
 import websocket.messages.ErrorMessage;
 import websocket.messages.LoadGameMessage;
@@ -59,7 +62,9 @@ public class WebsocketHandler {
                 connect(session, clientAuthToken, clientGameID);
             }
             case MAKE_MOVE -> {
-                makeMove(session, clientAuthToken, clientGameID);
+                MakeMoveCommand moveCommand =
+                        (MakeMoveCommand) objectEncoderDecoder.decode(message, MakeMoveCommand.class);
+                makeMove(session, clientAuthToken, clientGameID, moveCommand.getChessMove());
             }
             case LEAVE -> {
                 leave(session, clientAuthToken, clientGameID);
@@ -113,12 +118,81 @@ public class WebsocketHandler {
         return notificationType;
     }
 
-    private void makeMove(Session session, String currentAuthToken, int id) {
+    private void makeMove(Session session, String currentAuthToken, int id, ChessMove chessMove) throws IOException {
+        // check if it's the current user's turn
+        var currentGameData = gameDB.getGame(id);
+        var currentGame = currentGameData.game();
+
+        var currentUserColor = getUserColor(currentAuthToken, currentGameData);
+
+        if (currentUserColor == null) {
+            var error = gson.toJson(new ErrorMessage("Move cannot be made, you are not joined in the game"));
+            session.getRemote().sendString(error);
+            return;
+        } else if (!currentUserColor.equals(currentGame.getTeamTurn())) {
+            var error = gson.toJson(new ErrorMessage("Move cannot be made, wait for your next turn"));
+            session.getRemote().sendString(error);
+            return;
+        }
+
+        // check if they can move the requested piece
+        var currentChessBoard = currentGame.getBoard();
+
+        var teamColor = currentChessBoard.getPiece(chessMove.getStartPosition()).getTeamColor();
+
+        if (teamColor == null || teamColor != currentUserColor) {
+            var error = gson.toJson(new ErrorMessage("Move cannot be made, not your team color"));
+            session.getRemote().sendString(error);
+            return;
+        }
+
         // verify the validity of the move
-        // update the game with the move made
-        // load game message sent back to all clients
-        // notification sent to all other clients telling them the move
-        // if move results in check, checkmate or stalemate: notification sent to all clients
+        var validMoves = currentGame.validMoves(chessMove.getStartPosition());
+
+        for (var move : validMoves) {
+            if (move.equals(chessMove)) {
+                try {
+                    // if move is valid, update the game with the move made
+                    currentGame.makeMove(chessMove);
+                    gameDB.updateGame(id, null, null, currentGame);
+
+                    // send a LOAD_GAME message back to all clients
+                    var loadGameMessage = new LoadGameMessage(currentGame);
+                    var encodedLoadGameMessage = objectEncoderDecoder.encode(loadGameMessage);
+                    gameConnections.get(id).broadcast("", encodedLoadGameMessage);
+
+                    // TODO: send notification back to clients via a method
+                    session.getRemote().sendString(gson.toJson(new NotificationMessage("valid move")));
+
+                } catch (InvalidMoveException e) {
+                    System.out.println("fail");
+                }
+            }
+        }
+
+        // TODO: if move results in check, checkmate or stalemate: notification sent to all clients
+    }
+
+    /**
+     * Get a requested user's color in a game
+     *
+     * @param currentAuthToken User to get the color of
+     * @param currentGame      Chess game to pull color out of
+     * @return WHITE, BLACK, or null
+     */
+    private ChessGame.TeamColor getUserColor(String currentAuthToken, GameData currentGame) {
+        var username = authDB.getAuthData(currentAuthToken).username();
+
+        var whiteUsername = currentGame.whiteUsername();
+        var blackUsername = currentGame.blackUsername();
+
+        if (whiteUsername != null && whiteUsername.equals(username)) {
+            return ChessGame.TeamColor.WHITE;
+        } else if (blackUsername != null && blackUsername.equals(username)) {
+            return ChessGame.TeamColor.BLACK;
+        } else {
+            return null;
+        }
     }
 
     private void leave(Session session, String currentAuthToken, int id) throws IOException {

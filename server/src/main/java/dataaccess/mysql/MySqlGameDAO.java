@@ -184,7 +184,6 @@ public class MySqlGameDAO implements GameDAO {
                     preparedStatement.setString(1, username);
                     preparedStatement.setInt(2, gameID);
                 }
-                System.out.println(preparedStatement);
                 preparedStatement.executeUpdate();
             }
         } catch (SQLException ex) {
