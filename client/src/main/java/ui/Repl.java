@@ -27,7 +27,7 @@ public class Repl implements NotificationHandler {
 
             try {
                 result = client.evaluateCommand(line);
-                System.out.print(result);
+                System.out.print(result + "\n");
             } catch (Throwable e) {
                 System.out.print(SET_TEXT_COLOR_RED + "  Error: " + e);
             }
@@ -37,7 +37,7 @@ public class Repl implements NotificationHandler {
     private void printPrompt() {
         resetTextFormatting();
         var username = client.getCurrentUsername();
-        System.out.print("\n[" + (username == null ? "UNKNOWN_USER" : username) + "] ");
+        System.out.print("[" + (username == null ? "UNKNOWN_USER" : username) + "] ");
         System.out.print(">>> ");
     }
 
