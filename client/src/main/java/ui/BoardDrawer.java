@@ -20,7 +20,8 @@ public class BoardDrawer {
                 SET_TEXT_BOLD +
                 drawLetterRow(color) +
                 drawBoardRow(color, gameBoard) +
-                drawLetterRow(color);
+                drawLetterRow(color) +
+                RESET_TEXT_BOLD_FAINT;
     }
 
     private String drawBoardRow(ChessGame.TeamColor color, ChessBoard gameBoard) {

@@ -226,12 +226,7 @@ public class ChessClient {
             ws = new WebsocketCommunicator(serverUrl, notificationHandler);
             ws.connect(currentAuthToken, id);
 
-            var board = new ChessBoard();
-            board.resetBoard();
-
-            var drawnBoard = new BoardDrawer().drawBoard(teamColor, board);
-
-            return String.format(SET_TEXT_COLOR_BLUE + "  Joined game %d.\n\n%s", id, drawnBoard);
+            return String.format(SET_TEXT_COLOR_BLUE + "  Joined game %d.\n", id);
         }
 
         throw new ResponseException(400, syntaxErrorFormatter(CommandSyntax.JOIN));
@@ -258,7 +253,7 @@ public class ChessClient {
 
             var drawnBoard = new BoardDrawer().drawBoard(ChessGame.TeamColor.WHITE, board);
 
-            return String.format(SET_TEXT_COLOR_BLUE + "  Observing game %d.\n\n%s", id, drawnBoard);
+            return String.format(SET_TEXT_COLOR_BLUE + "  Observing game %d.\n%s", id, drawnBoard);
         }
         throw new ResponseException(400, syntaxErrorFormatter(CommandSyntax.OBSERVE));
     }
@@ -279,7 +274,7 @@ public class ChessClient {
         }
         throw new ResponseException(400, syntaxErrorFormatter(CommandSyntax.EXIT));
     }
-    
+
     private ChessGame.TeamColor parseTeamColor(String[] params) throws ResponseException {
         var requestedColor = params[1];
         ChessGame.TeamColor teamColor;

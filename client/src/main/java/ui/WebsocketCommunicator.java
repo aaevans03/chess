@@ -1,5 +1,6 @@
 package ui;
 
+import chess.ChessGame;
 import com.google.gson.Gson;
 import serverfacade.ResponseException;
 import websocket.commands.UserGameCommand;
@@ -16,6 +17,8 @@ public class WebsocketCommunicator extends Endpoint {
 
     Session session;
     NotificationHandler notificationHandler;
+    ChessGame currentGame = null;
+    ChessGame.TeamColor currentTeamColor = ChessGame.TeamColor.WHITE;
 
     public WebsocketCommunicator(String url, NotificationHandler notificationHandler) throws ResponseException {
         try {
@@ -47,7 +50,8 @@ public class WebsocketCommunicator extends Endpoint {
             case LOAD_GAME -> {
                 // game sent back
                 LoadGameMessage loadGameMessage = gson.fromJson(message, LoadGameMessage.class);
-                System.out.println(loadGameMessage.getGame());
+                currentGame = loadGameMessage.getGame();
+                notificationHandler.printBoard(currentTeamColor, currentGame.getBoard());
             }
             case ERROR -> {
                 // error, invalid command sent to server
@@ -76,5 +80,12 @@ public class WebsocketCommunicator extends Endpoint {
         } catch (IOException ex) {
             throw new ResponseException(500, ex.getMessage());
         }
+    }
+
+    public ChessGame getCurrentGame() throws ResponseException {
+        if (currentGame == null) {
+            throw new ResponseException(500, "Error: game failed to load");
+        }
+        return currentGame;
     }
 }
