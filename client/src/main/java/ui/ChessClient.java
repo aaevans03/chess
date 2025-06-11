@@ -223,7 +223,7 @@ public class ChessClient {
             // send a CONNECT WebSocket message to the server
             // transition to the gameplay UI.
             ws = new WebsocketCommunicator(serverUrl, notificationHandler);
-            ws.connect(currentAuthToken, currentGameID);
+            ws.connect(currentAuthToken, serverGameId);
 
             return String.format(SET_TEXT_COLOR_BLUE + "  Joined game %d.\n", currentGameID);
         }
@@ -248,7 +248,7 @@ public class ChessClient {
 
             // open a websocket connection with the server using the `/ws` endpoint
             ws = new WebsocketCommunicator(serverUrl, notificationHandler);
-            ws.connect(currentAuthToken, currentGameID);
+            ws.connect(currentAuthToken, serverGameId);
 
             return String.format(SET_TEXT_COLOR_BLUE + "  Observing game %d.\n", currentGameID);
         }
