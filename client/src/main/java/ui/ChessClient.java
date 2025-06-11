@@ -257,11 +257,31 @@ public class ChessClient {
 
     private String gameplay(String cmd, String[] params) throws ResponseException {
         return switch (cmd) {
+            case "redraw", "r", "re" -> redraw(params);
+            case "move", "m" -> makeMove(params);
+            case "highlight", "h" -> highlightMoves(params);
+            case "resign", "res" -> resign(params);
             case "exit", "e", "quit", "q", "leave", "l" -> exit(params);
-            case "help", "h" -> CommandSyntax.help(ClientState.GAMEPLAY);
+            case "help" -> CommandSyntax.help(ClientState.GAMEPLAY);
             default -> SET_TEXT_COLOR_RED + "  Unknown command. List of valid commands:\n"
                     + CommandSyntax.help(ClientState.GAMEPLAY);
         };
+    }
+
+    private String redraw(String... params) {
+        return "";
+    }
+
+    private String makeMove(String... params) {
+        return "";
+    }
+
+    private String highlightMoves(String... params) {
+        return "";
+    }
+
+    private String resign(String... params) {
+        return "";
     }
 
     private String exit(String... params) throws ResponseException {

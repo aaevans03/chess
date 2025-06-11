@@ -1,6 +1,7 @@
 package ui;
 
-import static ui.EscapeSequences.*;
+import static ui.EscapeSequences.SET_TEXT_COLOR_LIGHT_GREY;
+import static ui.EscapeSequences.SET_TEXT_COLOR_MAGENTA;
 
 /**
  * Class for storing the syntax of different ChessClient commands, as well as the help command.
@@ -18,6 +19,10 @@ public class CommandSyntax {
     public static final String OBSERVE = "observe <ID>";
     public static final String LOGOUT = "logout";
 
+    public static final String REDRAW = "redraw";
+    public static final String MAKE_MOVE = "move [a-h][1-8] [a-h][1-8]";
+    public static final String HIGHLIGHT_LEGAL_MOVES = "highlight [a-h][1-8]";
+    public static final String RESIGN = "resign";
     public static final String EXIT = "exit";
 
     public static String help(ClientState clientState) {
@@ -51,10 +56,18 @@ public class CommandSyntax {
                 output.append(SET_TEXT_COLOR_LIGHT_GREY + " - display list of commands\n");
             }
             case GAMEPLAY -> {
-                output.append("  " + SET_TEXT_UNDERLINE + "Full game implementation coming soon! Current commands");
-                output.append(RESET_TEXT_UNDERLINE + ":\n");
+                output.append(SET_TEXT_COLOR_MAGENTA + "  " + CommandSyntax.REDRAW);
+                output.append(SET_TEXT_COLOR_LIGHT_GREY + " - redraw chess board on screen\n");
+                output.append(SET_TEXT_COLOR_MAGENTA + "  " + CommandSyntax.MAKE_MOVE);
+                output.append(SET_TEXT_COLOR_LIGHT_GREY + " - move a chess piece\n");
+                output.append(SET_TEXT_COLOR_MAGENTA + "  " + CommandSyntax.HIGHLIGHT_LEGAL_MOVES);
+                output.append(SET_TEXT_COLOR_LIGHT_GREY + " - highlight all legal moves of a piece\n");
+                output.append(SET_TEXT_COLOR_MAGENTA + "  " + CommandSyntax.RESIGN);
+                output.append(SET_TEXT_COLOR_LIGHT_GREY + " - resign and end the game\n");
                 output.append(SET_TEXT_COLOR_MAGENTA + "  " + CommandSyntax.EXIT);
                 output.append(SET_TEXT_COLOR_LIGHT_GREY + " - exit current game\n");
+                output.append(SET_TEXT_COLOR_MAGENTA + "  " + CommandSyntax.HELP);
+                output.append(SET_TEXT_COLOR_LIGHT_GREY + " - display list of commands\n");
             }
         }
 
