@@ -27,7 +27,9 @@ public class Repl implements NotificationHandler {
 
             try {
                 result = client.evaluateCommand(line);
-                System.out.print(result + "\n");
+                if (!result.isEmpty()) {
+                    System.out.print(result + "\n");
+                }
             } catch (Throwable e) {
                 System.out.print(SET_TEXT_COLOR_RED + "  Error: " + e);
             }
