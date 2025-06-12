@@ -289,6 +289,9 @@ public class WebsocketHandler {
                 gameDB.updateGame(id, "SET NULL", ChessGame.TeamColor.BLACK, null);
             }
 
+            // remove authToken from connection list
+            gameConnections.get(id).connections.remove(currentAuthToken);
+
             // notification to all other clients that client left
             notifyAllClients(currentAuthToken, id, NotificationType.LEAVE_GAME, "");
 
