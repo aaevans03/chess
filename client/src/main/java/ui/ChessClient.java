@@ -12,6 +12,7 @@ import websocket.commands.UserGameCommand;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Objects;
+import java.util.Scanner;
 
 import static ui.EscapeSequences.*;
 
@@ -332,8 +333,17 @@ public class ChessClient {
 
     private String resign(String... params) throws ResponseException {
         if (params.length == 0) {
-            var cmd = new UserGameCommand(UserGameCommand.CommandType.RESIGN, currentAuthToken, currentGameID);
-            ws.sendMessage(cmd);
+            System.out.println(SET_TEXT_COLOR_BLUE + "   Are you sure you want to resign? Type \"yes\" to confirm:");
+
+            Scanner scanner = new Scanner(System.in);
+            String line = scanner.next();
+
+            if (line.equals("yes")) {
+                var cmd = new UserGameCommand(UserGameCommand.CommandType.RESIGN, currentAuthToken, currentGameID);
+                ws.sendMessage(cmd);
+            } else {
+                System.out.println(SET_TEXT_COLOR_BLUE + "   Resignation cancelled.");
+            }
             return "";
         }
         throw new ResponseException(400, syntaxErrorFormatter(CommandSyntax.RESIGN));
