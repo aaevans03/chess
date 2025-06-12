@@ -22,6 +22,7 @@ public class WebsocketCommunicator extends Endpoint {
     NotificationHandler notificationHandler;
     ChessGame currentGame = null;
     ChessGame.TeamColor currentTeamColor = ChessGame.TeamColor.WHITE;
+    boolean isEnded = false;
 
     public WebsocketCommunicator(String url, NotificationHandler notificationHandler) throws ResponseException {
         try {
@@ -59,6 +60,7 @@ public class WebsocketCommunicator extends Endpoint {
                 NotificationMessage turnNotification;
 
                 if (loadGameMessage.isEnded()) {
+                    isEnded = true;
                     turnNotification = new NotificationMessage("The game has ended.");
                 } else {
                     turnNotification = new NotificationMessage(String.format("It is %s's turn", currentGame.getTeamTurn()));
@@ -103,7 +105,13 @@ public class WebsocketCommunicator extends Endpoint {
 
     public void redrawBoard() {
         notificationHandler.printBoard(currentTeamColor, currentGame.getBoard());
-        var turnNotification = new NotificationMessage(String.format("It is %s's turn", currentGame.getTeamTurn()));
+        NotificationMessage turnNotification;
+        if (isEnded) {
+            turnNotification = new NotificationMessage("The game has ended.");
+        } else {
+            turnNotification = new NotificationMessage(String.format("It is %s's turn", currentGame.getTeamTurn()));
+        }
+
         notificationHandler.notify(turnNotification);
     }
 

@@ -39,7 +39,7 @@ public class Repl implements NotificationHandler {
     private void printPrompt() {
         resetTextFormatting();
         var username = client.getCurrentUsername();
-        System.out.print("[" + (username == null ? "UNKNOWN_USER" : username) + "] ");
+        System.out.print("\r[" + (username == null ? "UNKNOWN_USER" : username) + "] ");
         System.out.print(">>> ");
     }
 

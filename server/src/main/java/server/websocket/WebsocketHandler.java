@@ -122,7 +122,7 @@ public class WebsocketHandler {
         var currentGameData = gameDB.getGame(id);
         var currentGame = currentGameData.game();
 
-        var currentUserColor = getUserColor(currentAuthToken, currentGameData);
+        var currentUserColor = getCurrentUserColor(currentAuthToken, currentGameData);
 
         if (currentUserColor == null) {
             sendError(session, "Move cannot be made, you are not joined in the game.");
@@ -171,15 +171,18 @@ public class WebsocketHandler {
                     ChessGame.TeamColor otherUserColor = (currentUserColor.equals(ChessGame.TeamColor.WHITE) ?
                             ChessGame.TeamColor.BLACK : ChessGame.TeamColor.WHITE);
 
+                    String otherUsername = getPlayerUsername(otherUserColor, currentGameData);
+
                     if (currentGame.isInStalemate(otherUserColor)) {
-                        notifyAllClients("", id, NotificationType.STALEMATE, otherUserColor.toString());
+                        notifyAllClients("", id, NotificationType.STALEMATE, null);
                         endedGameList.add(id);
                     } else if (currentGame.isInCheckmate(otherUserColor)) {
-                        notifyAllClients("", id, NotificationType.CHECKMATE, otherUserColor.toString());
+                        notifyAllClients("", id, NotificationType.CHECKMATE, otherUsername);
                         endedGameList.add(id);
                     } else if (currentGame.isInCheck(otherUserColor)) {
-                        notifyAllClients("", id, NotificationType.CHECK, otherUserColor.toString());
+                        notifyAllClients("", id, NotificationType.CHECK, otherUsername);
                     }
+
 
                     return;
                 } catch (InvalidMoveException e) {
@@ -187,9 +190,7 @@ public class WebsocketHandler {
                 }
             }
         }
-
         sendError(session, "Invalid move entered, please try again.");
-
     }
 
     private void sendMoveMadeMessage(String currentAuthToken, int id, ChessMove chessMove, ChessPiece.PieceType pieceType) throws ResponseException {
@@ -206,13 +207,13 @@ public class WebsocketHandler {
     }
 
     /**
-     * Get a requested user's color in a game
+     * Get a user's color given their authToken in a game
      *
      * @param currentAuthToken User to get the color of
      * @param currentGame      Chess game to pull color out of
      * @return WHITE, BLACK, or null
      */
-    private ChessGame.TeamColor getUserColor(String currentAuthToken, GameData currentGame) {
+    private ChessGame.TeamColor getCurrentUserColor(String currentAuthToken, GameData currentGame) {
         var username = authDB.getAuthData(currentAuthToken).username();
 
         var whiteUsername = currentGame.whiteUsername();
@@ -224,6 +225,35 @@ public class WebsocketHandler {
             return ChessGame.TeamColor.BLACK;
         } else {
             return null;
+        }
+    }
+
+    /**
+     * Given a teamColor and gameData, pull the requested username out
+     *
+     * @param teamColor
+     * @param gameData
+     * @return Username, or team color name if username is null
+     */
+    private String getPlayerUsername(ChessGame.TeamColor teamColor, GameData gameData) {
+        switch (teamColor) {
+            case WHITE -> {
+                if (gameData.whiteUsername() != null) {
+                    return gameData.whiteUsername();
+                } else {
+                    return teamColor.toString();
+                }
+            }
+            case BLACK -> {
+                if (gameData.blackUsername() != null) {
+                    return gameData.blackUsername();
+                } else {
+                    return teamColor.toString();
+                }
+            }
+            default -> {
+                return null;
+            }
         }
     }
 
@@ -253,8 +283,7 @@ public class WebsocketHandler {
 
     private void resign(Session session, String currentAuthToken, int id) throws ResponseException {
         if (endedGameList.contains(id)) {
-            var msg = objectEncoderDecoder.encode(new NotificationMessage("Can't resign, game has already ended"));
-            notifyClient(session, msg);
+            sendError(session, "Can't resign, game has already ended");
         } else {
             // server marks game as over (no more moves can be made)
             endedGameList.add(id);
