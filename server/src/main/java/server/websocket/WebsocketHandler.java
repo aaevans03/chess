@@ -24,6 +24,7 @@ import websocket.messages.NotificationType;
 
 import java.io.IOException;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeoutException;
 
 @WebSocket
 public class WebsocketHandler {
@@ -381,6 +382,10 @@ public class WebsocketHandler {
 
     @OnWebSocketError
     public void onWebSocketError(Session session, Throwable ex) throws ResponseException {
-        sendError(session, ex.getMessage());
+        if (ex.getClass() == TimeoutException.class) {
+            sendError(session, "session timed out");
+        }
+        sendError(session, "something went wrong.");
+        throw new ResponseException(500, ex.getMessage());
     }
 }
