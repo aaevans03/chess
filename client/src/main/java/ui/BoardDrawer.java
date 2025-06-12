@@ -13,6 +13,7 @@ public class BoardDrawer {
     final String highlightedWhiteSquare = SET_BG_COLOR_GREEN;
     final String blackSquare = SET_BG_COLOR_BLACK;
     final String highlightedBlackSquare = SET_BG_COLOR_DARK_GREEN;
+    final String highlightedTargetPiece = SET_BG_COLOR_YELLOW;
     final String whitePiece = SET_TEXT_COLOR_RED;
     final String blackPiece = SET_TEXT_COLOR_BLUE;
 
@@ -34,10 +35,7 @@ public class BoardDrawer {
                 boardRow.append(borderColor).append(" ").append(row).append(" ");
 
                 for (int col = 1; col <= 8; col++) {
-                    boolean validMoveSquare = isValidMoveSquare(moves, row, col);
-                    boolean pieceToBeMoved = isPieceToBeMoved(moves, row, col);
-
-                    boardRow.append(drawBoardSquare(gameBoard, row, col, validMoveSquare, pieceToBeMoved));
+                    boardRow.append(drawCompleteSquare(gameBoard, moves, row, col));
                 }
 
                 boardRow.append(borderColor).append(" ").append(row).append(" ");
@@ -48,11 +46,7 @@ public class BoardDrawer {
                 boardRow.append(borderColor).append(" ").append(row).append(" ");
 
                 for (int col = 8; col >= 1; col--) {
-
-                    boolean validMoveSquare = isValidMoveSquare(moves, row, col);
-                    boolean pieceToBeMoved = isPieceToBeMoved(moves, row, col);
-
-                    boardRow.append(drawBoardSquare(gameBoard, row, col, validMoveSquare, pieceToBeMoved));
+                    boardRow.append(drawCompleteSquare(gameBoard, moves, row, col));
                 }
 
                 boardRow.append(borderColor).append(" ").append(row).append(" ");
@@ -60,6 +54,12 @@ public class BoardDrawer {
             }
         }
         return boardRow.toString();
+    }
+
+    private String drawCompleteSquare(ChessBoard gameBoard, Collection<ChessMove> moves, int row, int col) {
+        boolean validMoveSquare = isValidMoveSquare(moves, row, col);
+        boolean pieceToBeMoved = isPieceToBeMoved(moves, row, col);
+        return drawBoardSquare(gameBoard, row, col, validMoveSquare, pieceToBeMoved);
     }
 
     private boolean isValidMoveSquare(Collection<ChessMove> moves, int row, int col) {
@@ -155,7 +155,7 @@ public class BoardDrawer {
 
     private String colorSquare(int row, int col, boolean validMoveSquare, boolean pieceToBeMoved) {
         if (pieceToBeMoved) {
-            return SET_BG_COLOR_YELLOW;
+            return highlightedTargetPiece;
         } else if (validMoveSquare) {
             return ((row + col) % 2 == 1) ? highlightedWhiteSquare : highlightedBlackSquare;
         }
