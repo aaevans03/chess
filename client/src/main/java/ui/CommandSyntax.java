@@ -21,7 +21,7 @@ public class CommandSyntax {
 
     public static final String REDRAW = "redraw";
     public static final String MAKE_MOVE = "move [a-h][1-8] [a-h][1-8]";
-    public static final String HIGHLIGHT_LEGAL_MOVES = "highlight [a-h][1-8]";
+    public static final String HIGHLIGHT_LEGAL_MOVES = "highlight OR moves [a-h][1-8]";
     public static final String RESIGN = "resign";
     public static final String EXIT = "exit";
 

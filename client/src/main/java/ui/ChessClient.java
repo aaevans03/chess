@@ -262,7 +262,7 @@ public class ChessClient {
         return switch (cmd) {
             case "redraw", "r", "re" -> redraw(params);
             case "move", "m" -> makeMove(params);
-            case "highlight", "h" -> highlightMoves(params);
+            case "highlight", "h", "moves" -> highlightMoves(params);
             case "resign", "res" -> resign(params);
             case "exit", "e", "quit", "q", "leave", "l" -> exit(params);
             case "help" -> CommandSyntax.help(ClientState.GAMEPLAY);
@@ -298,8 +298,16 @@ public class ChessClient {
         throw new ResponseException(400, syntaxErrorFormatter(CommandSyntax.MAKE_MOVE));
     }
 
-    private String highlightMoves(String... params) {
-        return "";
+    private String highlightMoves(String... params) throws ResponseException {
+        if (params.length == 1 && params[0].matches("^[a-h][1-8]$")) {
+
+            // get list of moves from game object stored in WebsocketCommunicator
+            ChessPosition position = parseChessPosition(params[0]);
+            ws.drawMoves(position);
+
+            return "";
+        }
+        throw new ResponseException(400, syntaxErrorFormatter(CommandSyntax.HIGHLIGHT_LEGAL_MOVES));
     }
 
     private ChessPosition parseChessPosition(String input) {

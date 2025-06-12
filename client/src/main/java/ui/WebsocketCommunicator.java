@@ -2,6 +2,7 @@ package ui;
 
 import chess.ChessGame;
 import chess.ChessMove;
+import chess.ChessPosition;
 import com.google.gson.Gson;
 import serverfacade.ResponseException;
 import websocket.commands.MakeMoveCommand;
@@ -15,6 +16,7 @@ import javax.websocket.*;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Collection;
 
 public class WebsocketCommunicator extends Endpoint {
 
@@ -55,7 +57,7 @@ public class WebsocketCommunicator extends Endpoint {
                 // game sent back
                 LoadGameMessage loadGameMessage = gson.fromJson(message, LoadGameMessage.class);
                 currentGame = loadGameMessage.getGame();
-                notificationHandler.printBoard(currentTeamColor, currentGame.getBoard());
+                notificationHandler.printBoard(currentTeamColor, currentGame.getBoard(), null);
 
                 NotificationMessage turnNotification;
 
@@ -104,7 +106,7 @@ public class WebsocketCommunicator extends Endpoint {
     }
 
     public void redrawBoard() {
-        notificationHandler.printBoard(currentTeamColor, currentGame.getBoard());
+        notificationHandler.printBoard(currentTeamColor, currentGame.getBoard(), null);
         NotificationMessage turnNotification;
         if (isEnded) {
             turnNotification = new NotificationMessage("The game has ended.");
@@ -118,6 +120,19 @@ public class WebsocketCommunicator extends Endpoint {
     public void makeMove(String authToken, int id, ChessMove move) throws ResponseException {
         var cmd = new MakeMoveCommand(UserGameCommand.CommandType.MAKE_MOVE, authToken, id, move);
         sendMessage(cmd);
+    }
+
+    public void drawMoves(ChessPosition position) {
+        Collection<ChessMove> moves = currentGame.validMoves(position);
+        if (moves == null) {
+            notificationHandler.notifyError(new ErrorMessage("No piece selected."));
+            return;
+        }
+        if (moves.isEmpty()) {
+            notificationHandler.notify(new NotificationMessage("There are no valid moves for the selected piece."));
+            return;
+        }
+        notificationHandler.printValidMoves(currentTeamColor, currentGame.getBoard(), moves);
     }
 
     public void sendMessage(UserGameCommand cmd) throws ResponseException {

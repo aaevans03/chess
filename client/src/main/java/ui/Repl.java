@@ -2,9 +2,11 @@ package ui;
 
 import chess.ChessBoard;
 import chess.ChessGame;
+import chess.ChessMove;
 import websocket.messages.ErrorMessage;
 import websocket.messages.NotificationMessage;
 
+import java.util.Collection;
 import java.util.Scanner;
 
 import static ui.EscapeSequences.*;
@@ -56,9 +58,14 @@ public class Repl implements NotificationHandler {
     }
 
     @Override
-    public void printBoard(ChessGame.TeamColor teamColor, ChessBoard chessBoard) {
-        System.out.println("\r" + new BoardDrawer().drawBoard(teamColor, chessBoard));
+    public void printBoard(ChessGame.TeamColor teamColor, ChessBoard chessBoard, Collection<ChessMove> moves) {
+        System.out.println("\r" + new BoardDrawer().drawBoard(teamColor, chessBoard, null));
         printPrompt();
+    }
+
+    @Override
+    public void printValidMoves(ChessGame.TeamColor teamcolor, ChessBoard chessBoard, Collection<ChessMove> moves) {
+        System.out.println("\r" + new BoardDrawer().drawBoard(teamcolor, chessBoard, moves));
     }
 
     @Override

@@ -1,9 +1,8 @@
 package ui;
 
-import chess.ChessBoard;
-import chess.ChessGame;
-import chess.ChessPiece;
-import chess.ChessPosition;
+import chess.*;
+
+import java.util.Collection;
 
 import static ui.EscapeSequences.*;
 
@@ -11,63 +10,94 @@ public class BoardDrawer {
 
     final String borderColor = SET_BG_COLOR_LIGHT_GREY;
     final String whiteSquare = SET_BG_COLOR_WHITE;
+    final String highlightedWhiteSquare = SET_BG_COLOR_GREEN;
     final String blackSquare = SET_BG_COLOR_BLACK;
+    final String highlightedBlackSquare = SET_BG_COLOR_DARK_GREEN;
     final String whitePiece = SET_TEXT_COLOR_RED;
     final String blackPiece = SET_TEXT_COLOR_BLUE;
 
-    public String drawBoard(ChessGame.TeamColor color, ChessBoard gameBoard) {
+    public String drawBoard(ChessGame.TeamColor color, ChessBoard gameBoard, Collection<ChessMove> moves) {
         return RESET_TEXT_COLOR +
                 SET_TEXT_BOLD +
                 drawLetterRow(color) +
-                drawBoardRow(color, gameBoard) +
+                drawBoardRows(color, gameBoard, moves) +
                 drawLetterRow(color) +
                 RESET_TEXT_BOLD_FAINT;
     }
 
-    private String drawBoardRow(ChessGame.TeamColor color, ChessBoard gameBoard) {
+    private String drawBoardRows(ChessGame.TeamColor color, ChessBoard gameBoard, Collection<ChessMove> moves) {
 
         var boardRow = new StringBuilder();
 
         if (color.equals(ChessGame.TeamColor.WHITE)) {
             for (int row = 8; row >= 1; row--) {
-                boardRow.append(borderColor);
-                boardRow.append(" ").append(row).append(" ");
+                boardRow.append(borderColor).append(" ").append(row).append(" ");
 
                 for (int col = 1; col <= 8; col++) {
-                    boardRow.append(drawBoardSquare(gameBoard, row, col));
+                    boolean validMoveSquare = isValidMoveSquare(moves, row, col);
+                    boolean pieceToBeMoved = isPieceToBeMoved(moves, row, col);
+
+                    boardRow.append(drawBoardSquare(gameBoard, row, col, validMoveSquare, pieceToBeMoved));
                 }
 
-                boardRow.append(borderColor);
-                boardRow.append(" ").append(row).append(" ");
+                boardRow.append(borderColor).append(" ").append(row).append(" ");
                 boardRow.append(RESET_BG_COLOR).append("\n");
             }
         } else if (color.equals(ChessGame.TeamColor.BLACK)) {
             for (int row = 1; row <= 8; row++) {
-                boardRow.append(borderColor);
-                boardRow.append(" ").append(row).append(" ");
+                boardRow.append(borderColor).append(" ").append(row).append(" ");
 
                 for (int col = 8; col >= 1; col--) {
-                    boardRow.append(drawBoardSquare(gameBoard, row, col));
+
+                    boolean validMoveSquare = isValidMoveSquare(moves, row, col);
+                    boolean pieceToBeMoved = isPieceToBeMoved(moves, row, col);
+
+                    boardRow.append(drawBoardSquare(gameBoard, row, col, validMoveSquare, pieceToBeMoved));
                 }
 
-                boardRow.append(borderColor);
-                boardRow.append(" ").append(row).append(" ");
+                boardRow.append(borderColor).append(" ").append(row).append(" ");
                 boardRow.append(RESET_BG_COLOR).append("\n");
             }
         }
         return boardRow.toString();
     }
 
-    private String drawBoardSquare(ChessBoard gameBoard, int row, int col) {
+    private boolean isValidMoveSquare(Collection<ChessMove> moves, int row, int col) {
+        boolean validMoveSquare = false;
+        if (moves != null) {
+            for (var move : moves) {
+                if (move.getEndPosition().getRow() == row && move.getEndPosition().getColumn() == col) {
+                    validMoveSquare = true;
+                    break;
+                }
+            }
+        }
+        return validMoveSquare;
+    }
+
+    private boolean isPieceToBeMoved(Collection<ChessMove> moves, int row, int col) {
+        boolean pieceToBeMoved = false;
+        if (moves != null && !moves.isEmpty()) {
+            // Grab any move from the list and get the start position
+            var move = moves.iterator().next();
+
+            if (move.getStartPosition().equals(new ChessPosition(row, col))) {
+                pieceToBeMoved = true;
+            }
+        }
+        return pieceToBeMoved;
+    }
+
+    private String drawBoardSquare(ChessBoard gameBoard, int row, int col, boolean validMoveSquare, boolean pieceToBeMoved) {
 
         var square = new StringBuilder();
 
-        square.append(colorSquare(row, col)).append(" ");
+        square.append(colorSquare(row, col, validMoveSquare, pieceToBeMoved)).append(" ");
 
         var piece = gameBoard.getPiece(new ChessPosition(row, col));
 
         if (piece != null) {
-            square.append(drawPiece(piece));
+            square.append(drawPiece(piece, validMoveSquare, pieceToBeMoved));
         } else {
             square.append(" ");
         }
@@ -76,12 +106,19 @@ public class BoardDrawer {
         return square.toString();
     }
 
-    private String drawPiece(ChessPiece piece) {
+    private String drawPiece(ChessPiece piece, boolean validMoveSquare, boolean pieceToBeMoved) {
         var square = new StringBuilder();
 
         var pieceColor = piece.getTeamColor();
-        square.append(pieceColor.equals(ChessGame.TeamColor.WHITE) ?
-                whitePiece : blackPiece);
+
+        if (pieceToBeMoved) {
+            square.append(SET_TEXT_COLOR_BLACK);
+        } else if (validMoveSquare) {
+            square.append(SET_TEXT_COLOR_BLACK);
+        } else {
+            square.append(pieceColor.equals(ChessGame.TeamColor.WHITE) ?
+                    whitePiece : blackPiece);
+        }
 
         var type = piece.getPieceType();
 
@@ -116,7 +153,13 @@ public class BoardDrawer {
         return row.toString();
     }
 
-    private String colorSquare(int row, int col) {
+    private String colorSquare(int row, int col, boolean validMoveSquare, boolean pieceToBeMoved) {
+        if (pieceToBeMoved) {
+            return SET_BG_COLOR_YELLOW;
+        } else if (validMoveSquare) {
+            return ((row + col) % 2 == 1) ? highlightedWhiteSquare : highlightedBlackSquare;
+        }
+
         return ((row + col) % 2 == 1) ? whiteSquare : blackSquare;
     }
 }
