@@ -23,7 +23,6 @@ import websocket.messages.NotificationMessage;
 import websocket.messages.NotificationType;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.concurrent.ConcurrentHashMap;
 
 @WebSocket
@@ -31,7 +30,6 @@ public class WebsocketHandler {
 
     ObjectEncoderDecoder objectEncoderDecoder = new ObjectEncoderDecoder();
     private final ConcurrentHashMap<Integer, ConnectionManager> gameConnections = new ConcurrentHashMap<>();
-    private final ArrayList<Integer> endedGameList = new ArrayList<Integer>();
 
     MySqlAuthDAO authDB = new MySqlAuthDAO();
     MySqlGameDAO gameDB = new MySqlGameDAO();
@@ -82,7 +80,7 @@ public class WebsocketHandler {
             NotificationType notificationType = getConnectNotificationType(currentGame, username);
 
             // send a LOAD_GAME message back to the client
-            boolean isEnded = endedGameList.contains(id);
+            boolean isEnded = (gameDB.getGame(id).game().getTeamTurn() == null);
 
             var loadGameMessage = new LoadGameMessage(currentGame.game(), isEnded);
             var encodedLoadGameMessage = objectEncoderDecoder.encode(loadGameMessage);
@@ -114,7 +112,7 @@ public class WebsocketHandler {
 
     private void makeMove(Session session, String currentAuthToken, int id, ChessMove chessMove) throws IOException, ResponseException {
         // check if game is being played
-        if (endedGameList.contains(id)) {
+        if ((gameDB.getGame(id).game().getTeamTurn() == null)) {
             sendError(session, "Move cannot be made, game has ended.");
             return;
         }
@@ -187,10 +185,10 @@ public class WebsocketHandler {
 
                     if (currentGame.isInStalemate(otherUserColor)) {
                         notifyAllClients("", id, NotificationType.STALEMATE, null);
-                        endedGameList.add(id);
+                        endGame(id);
                     } else if (currentGame.isInCheckmate(otherUserColor)) {
                         notifyAllClients("", id, NotificationType.CHECKMATE, otherUsername);
-                        endedGameList.add(id);
+                        endGame(id);
                     } else if (currentGame.isInCheck(otherUserColor)) {
                         notifyAllClients("", id, NotificationType.CHECK, otherUsername);
                     }
@@ -249,8 +247,8 @@ public class WebsocketHandler {
     /**
      * Given a teamColor and gameData, pull the requested username out
      *
-     * @param teamColor
-     * @param gameData
+     * @param teamColor Color to pull username out of
+     * @param gameData  Game data to pull username out of
      * @return Username, or team color name if username is null
      */
     private String getPlayerUsername(ChessGame.TeamColor teamColor, GameData gameData) {
@@ -300,18 +298,35 @@ public class WebsocketHandler {
     }
 
     private void resign(Session session, String currentAuthToken, int id) throws ResponseException {
-        if (endedGameList.contains(id)) {
-            var msg = objectEncoderDecoder.encode(new NotificationMessage("Can't resign, game has already ended"));
-            notifyClient(session, msg);
+        if (gameDB.getGame(id).game().getTeamTurn() == null) {
+            sendError(session, "Can't resign, game has already ended.");
         } else {
-            // server marks game as over (no more moves can be made)
-            endedGameList.add(id);
+            // check if the client is joined in the game
+            var currentGameData = gameDB.getGame(id);
+
+            if (getCurrentUserColor(currentAuthToken, currentGameData) == null) {
+                sendError(session, "Move cannot be made, you are not joined in the game.");
+                return;
+            }
+
+            // end the game
+            endGame(id);
+
             // notification to all clients informing that client resigned
             notifyAllClients(currentAuthToken, id, NotificationType.RESIGN, "");
 
             var msg = objectEncoderDecoder.encode(new NotificationMessage("You resigned, game over!"));
             notifyClient(session, msg);
         }
+    }
+
+    private void endGame(int id) {
+        var curGameData = gameDB.getGame(id);
+
+        var curGame = curGameData.game();
+        curGame.setTeamTurn(null);
+
+        gameDB.updateGame(id, null, null, curGame);
     }
 
     private void notifyAllClients(String currentAuthToken, int id, NotificationType notificationType,
@@ -321,7 +336,7 @@ public class WebsocketHandler {
             if (!currentAuthToken.isEmpty()) {
                 username = authDB.getAuthData(currentAuthToken).username();
             }
-            String msg = "";
+            String msg;
 
             switch (notificationType) {
                 case PLAYER_JOIN_WHITE -> msg = String.format("%s has joined the game as white!", username);
@@ -336,7 +351,6 @@ public class WebsocketHandler {
                 default -> msg = "Error occurred";
             }
 
-//            System.out.println(msg);
             var notification = objectEncoderDecoder.encode(new NotificationMessage(msg));
             gameConnections.get(id).broadcast(currentAuthToken, notification);
 

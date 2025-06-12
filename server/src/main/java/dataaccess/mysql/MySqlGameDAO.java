@@ -1,6 +1,7 @@
 package dataaccess.mysql;
 
 import chess.ChessGame;
+import com.google.gson.GsonBuilder;
 import dataaccess.DataAccessException;
 import dataaccess.DatabaseManager;
 import dataaccess.GameDAO;
@@ -159,7 +160,9 @@ public class MySqlGameDAO implements GameDAO {
     }
 
     private void updateGameGameObj(GameData gameData, ChessGame game) throws DataAccessException {
-        var encodedGame = new ObjectEncoderDecoder().encode(game);
+        var gson = new GsonBuilder().serializeNulls().create();
+        var encodedGame = gson.toJson(game);
+
         try (var conn = DatabaseManager.getConnection()) {
             try (var preparedStatement = conn.prepareStatement("UPDATE gameData SET game=? WHERE gameID=?;")) {
                 preparedStatement.setString(1, encodedGame);
