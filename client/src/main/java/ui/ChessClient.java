@@ -2,6 +2,7 @@ package ui;
 
 import chess.ChessGame;
 import chess.ChessMove;
+import chess.ChessPiece;
 import chess.ChessPosition;
 import model.GameData;
 import serverfacade.ResponseException;
@@ -280,7 +281,7 @@ public class ChessClient {
     }
 
     private String makeMove(String... params) throws ResponseException {
-        if (params.length == 2) {
+        if (params.length == 2 || params.length == 3) {
 
             if (params[0].matches("^[a-h][1-8]$") && params[1].matches("^[a-h][1-8]$")) {
 
@@ -288,6 +289,18 @@ public class ChessClient {
                 var finalPosition = parseChessPosition(params[1]);
 
                 var requestedMove = new ChessMove(initialPosition, finalPosition, null);
+
+                if (params.length == 3) {
+                    var piece = params[2].toUpperCase();
+
+                    if (!piece.equals("ROOK") && !piece.equals("KNIGHT") && !piece.equals("BISHOP") && !piece.equals("QUEEN")) {
+                        throw new ResponseException(500, "Pawn promotion piece should be a rook, knight, bishop, or queen");
+                    }
+
+                    ChessPiece.PieceType type = ChessPiece.PieceType.valueOf(piece);
+
+                    requestedMove = new ChessMove(initialPosition, finalPosition, type);
+                }
 
                 ws.makeMove(currentAuthToken, currentGameID, requestedMove);
                 return "";

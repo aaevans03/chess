@@ -151,8 +151,14 @@ public class WebsocketHandler {
 
         // verify the validity of the move
         var validMoves = currentGame.validMoves(chessMove.getStartPosition());
+        boolean promotionMove = false;
 
         for (var move : validMoves) {
+
+            if (move.getPromotionPiece() != null && move.getEndPosition().equals(chessMove.getEndPosition())) {
+                promotionMove = true;
+            }
+
             if (move.equals(chessMove)) {
                 try {
                     var pieceType = currentChessBoard.getPiece(chessMove.getStartPosition()).getPieceType();
@@ -183,17 +189,23 @@ public class WebsocketHandler {
                         notifyAllClients("", id, NotificationType.CHECK, otherUsername);
                     }
 
-
                     return;
                 } catch (InvalidMoveException e) {
                     sendError(session, "Move cannot be made, please try again.");
                 }
             }
         }
-        sendError(session, "Invalid move entered, please try again.");
+
+        if (promotionMove) {
+            sendError(session, "This pawn needs to be promoted to either a rook, knight, bishop or queen," +
+                    "\n          please specify which one.");
+        } else {
+            sendError(session, "Invalid move entered, please try again.");
+        }
     }
 
-    private void sendMoveMadeMessage(String currentAuthToken, int id, ChessMove chessMove, ChessPiece.PieceType pieceType) throws ResponseException {
+    private void sendMoveMadeMessage(String currentAuthToken, int id, ChessMove chessMove,
+                                     ChessPiece.PieceType pieceType) throws ResponseException {
         // determine what spaces they are based on chess board notation
         char initialCol = (char) (chessMove.getStartPosition().getColumn() - 1 + 'a');
         int initialRow = chessMove.getStartPosition().getRow();
