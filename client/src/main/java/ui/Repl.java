@@ -23,7 +23,7 @@ public class Repl implements NotificationHandler {
 
         Scanner scanner = new Scanner(System.in);
         var result = "";
-        while (!result.equals(SET_TEXT_COLOR_MAGENTA + "  Have a nice day!")) {
+        while (!result.equals(SET_TEXT_COLOR_MAGENTA + "   Have a nice day!")) {
             printPrompt();
             String line = scanner.nextLine();
 
@@ -33,7 +33,7 @@ public class Repl implements NotificationHandler {
                     System.out.print(result + "\n");
                 }
             } catch (Throwable e) {
-                System.out.print(SET_TEXT_COLOR_RED + "  Error: " + e);
+                System.out.print(SET_TEXT_COLOR_RED + "   Error: " + e);
             }
         }
     }
