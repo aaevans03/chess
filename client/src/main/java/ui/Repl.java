@@ -19,7 +19,7 @@ public class Repl implements NotificationHandler {
     }
 
     public void run() {
-        System.out.println(SET_TEXT_BOLD + SET_TEXT_COLOR_BLUE + "Welcome to Alex's Chess Client. Type \"help\" to get started.");
+        System.out.println(SET_TEXT_BOLD + SET_TEXT_COLOR_BLUE + "Welcome to Alex's Chess Client! Type \"help\" to get started.");
 
         Scanner scanner = new Scanner(System.in);
         var result = "";
