@@ -127,11 +127,4 @@ public class WebsocketCommunicator extends Endpoint {
             throw new ResponseException(500, ex.getMessage());
         }
     }
-
-    public ChessGame getCurrentGame() throws ResponseException {
-        if (currentGame == null) {
-            throw new ResponseException(500, "Error: game failed to load");
-        }
-        return currentGame;
-    }
 }

@@ -284,18 +284,8 @@ public class ChessClient {
 
             if (params[0].matches("^[a-h][1-8]$") && params[1].matches("^[a-h][1-8]$")) {
 
-                int initialCol = params[0].charAt(0) - 'a' + 1;
-                int initialRow = Integer.parseInt(String.valueOf(params[0].charAt(1)));
-
-                int finalCol = params[1].charAt(0) - 'a' + 1;
-                int finalRow = Integer.parseInt(String.valueOf(params[1].charAt(1)));
-
-//                System.out.println("Interpreted move:");
-//                System.out.println("INITIAL: " + initialCol + " " + initialRow);
-//                System.out.println("FINAL: " + finalCol + " " + finalRow);
-
-                var initialPosition = new ChessPosition(initialRow, initialCol);
-                var finalPosition = new ChessPosition(finalRow, finalCol);
+                var initialPosition = parseChessPosition(params[0]);
+                var finalPosition = parseChessPosition(params[1]);
 
                 var requestedMove = new ChessMove(initialPosition, finalPosition, null);
 
@@ -310,6 +300,13 @@ public class ChessClient {
 
     private String highlightMoves(String... params) {
         return "";
+    }
+
+    private ChessPosition parseChessPosition(String input) {
+        int col = input.charAt(0) - 'a' + 1;
+        int row = Integer.parseInt(String.valueOf(input.charAt(1)));
+
+        return new ChessPosition(row, col);
     }
 
     private String resign(String... params) throws ResponseException {
