@@ -8,6 +8,7 @@ import dataaccess.mysql.MySqlAuthDAO;
 import dataaccess.mysql.MySqlGameDAO;
 import model.GameData;
 import org.eclipse.jetty.websocket.api.Session;
+import org.eclipse.jetty.websocket.api.annotations.OnWebSocketError;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketMessage;
 import org.eclipse.jetty.websocket.api.annotations.WebSocket;
 import server.ObjectEncoderDecoder;
@@ -63,7 +64,7 @@ public class WebsocketHandler {
             case MAKE_MOVE -> {
                 MakeMoveCommand moveCommand =
                         (MakeMoveCommand) objectEncoderDecoder.decode(message, MakeMoveCommand.class);
-                makeMove(session, clientAuthToken, clientGameID, moveCommand.getChessMove());
+                makeMove(session, clientAuthToken, clientGameID, moveCommand.getMove());
             }
             case LEAVE -> leave(session, clientAuthToken, clientGameID);
             case RESIGN -> resign(session, clientAuthToken, clientGameID);
@@ -134,6 +135,11 @@ public class WebsocketHandler {
 
         // check if they can move the requested piece
         var currentChessBoard = currentGame.getBoard();
+
+        if (chessMove == null) {
+            sendError(session, "No move provided.");
+            return;
+        }
 
         var requestedPiece = currentChessBoard.getPiece(chessMove.getStartPosition());
 
@@ -295,7 +301,8 @@ public class WebsocketHandler {
 
     private void resign(Session session, String currentAuthToken, int id) throws ResponseException {
         if (endedGameList.contains(id)) {
-            sendError(session, "Can't resign, game has already ended");
+            var msg = objectEncoderDecoder.encode(new NotificationMessage("Can't resign, game has already ended"));
+            notifyClient(session, msg);
         } else {
             // server marks game as over (no more moves can be made)
             endedGameList.add(id);
@@ -353,5 +360,10 @@ public class WebsocketHandler {
         } catch (IOException e) {
             throw new ResponseException(500, e.getMessage());
         }
+    }
+
+    @OnWebSocketError
+    public void onWebSocketError(Session session, Throwable ex) throws ResponseException {
+        sendError(session, ex.getMessage());
     }
 }
